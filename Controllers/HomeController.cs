@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NotiflyV0._1.Models;
-
 
 
 
@@ -23,7 +23,31 @@ namespace NotiflyV0._1.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            string id = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+            var user = _context.AspNetUsers.Find(id);
+
+            if(user.PhoneNumber == null)
+            {
+                return View("AddPhoneNumber");
+            }
+            else
+            {
+                return View();
+            }
+
+        }
+
+        public IActionResult AddPhoneNumber(string phoneNumber)
+        {
+            string id = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+            var user = _context.AspNetUsers.Find(id);
+
+            user.PhoneNumber = phoneNumber;
+
+            return RedirectToAction("Index");
+
         }
 
         public IActionResult Events()

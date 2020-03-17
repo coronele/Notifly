@@ -25,7 +25,7 @@ namespace Twillo_Test.Controllers
         private readonly string TwilioAuthToken;
         private readonly NotiflyDbContext _context;
 
-       
+
         public SmsController(IConfiguration configuration, NotiflyDbContext context)
         {
             TwilioAccountSid = configuration.GetSection("APIKeys")["TwilioAccountSid"];
@@ -34,41 +34,58 @@ namespace Twillo_Test.Controllers
         }
 
 
+
+
+
         [HttpPost]
         public TwiMLResult ReceiveText(SmsRequest incomingMessage)
         {
-            string loggedInUser = "clay";
+            
 
-
+            //string id = "08bd85be-3531-4ddb-8814-4d554a016319";
             var messagingResponse = new MessagingResponse();
 
-            StringReader reader = new StringReader(incomingMessage.Body);
+            //string dummyMessage = "Lunch with Clay \n 3/29/21 \n Big Boy's \n Taylor, MI \n The Boys";
+
+            AddEventToDatabase(incomingMessage.Body);
+            
+
+            return TwiML(messagingResponse);
+
+        }
+
+        public void AddEventToDatabase(string messageBody)
+        {
+            string id = "08bd85be-3531-4ddb-8814-4d554a016319";
+            StringReader reader = new StringReader(messageBody);
             string line = reader.ReadLine();
             List<string> textparts = new List<string>();
+
             while (line != null)
             {
                 textparts.Add(line);
                 line = reader.ReadLine();
             }
+
             string userEvent = textparts[0];
-            string eventDateTime = textparts[1];
+            DateTime eventDateTime = DateTime.Parse(textparts[1]);
             string eventVenue = textparts[2];
             string eventLoc = textparts[3];
             string groupName = textparts[4];
 
             //List<Groups> foundGroups = _context.Groups.Where(x => x.GroupName == groupName).ToList();
 
-
-            EventTable newEvent = new EventTable(userEvent, 1, eventDateTime, eventVenue, eventLoc, loggedInUser);
+            EventTable newEvent = new EventTable(userEvent, "Description", 2, eventDateTime, eventVenue, eventLoc, id);
 
             _context.EventTable.Add(newEvent);
-            _context.SaveChanges();
 
-            return TwiML(messagingResponse);
+            
 
+            
         }
 
-         
+
+
 
         public ActionResult SendText(string body, string number)
         {
@@ -94,7 +111,7 @@ namespace Twillo_Test.Controllers
                 new PhoneNumber(n));
 
                 messageOptions.From = new PhoneNumber("+19854413010");
-                messageOptions.Body = "Rawr xD";
+                messageOptions.Body = "Proof for Erwin";
 
                 var message = MessageResource.Create(messageOptions);
             }
@@ -127,3 +144,5 @@ namespace Twillo_Test.Controllers
         }
     }
 }
+
+

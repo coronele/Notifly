@@ -10,6 +10,18 @@ namespace NotiflyV0._1.Models
             MemberRsvp = new HashSet<MemberRsvp>();
         }
 
+        public EventTable(string eventName, string description, int groupId, DateTime dateAndTime, string venue, string venueLocation, string userId)
+        {
+            EventName = eventName;
+            EventDescription = description;
+            GroupId = groupId;
+            DateAndTime = dateAndTime;
+            Venue = venue;
+            VenueLocation = venueLocation;
+            UserId = userId;
+            
+        }
+
         public int EventId { get; set; }
         public string EventName { get; set; }
         public string EventDescription { get; set; }
