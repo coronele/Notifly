@@ -1,0 +1,30 @@
+﻿@model List<EventTable>
+@{
+    ViewData["Title"] = "Events";
+    
+}
+
+<h1>Events</h1>
+
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Group Id</th>
+        <th>Date</th>
+        <th>Venue</th>
+        <th>Location</th>
+    </tr>
+    @foreach (var m in Model)
+    {
+        <tr>
+            <td>@m.EventName</td>
+            <td>@m.EventDescription</td>
+            <td>@m.GroupId</td>
+            <td>@m.DateAndTime</td>
+            <td>@m.Venue</td>
+            <td>@m.VenueLocation</td>
+        </tr>
+    }
+
+</table>
