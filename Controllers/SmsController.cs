@@ -26,6 +26,12 @@ namespace Twillo_Test.Controllers
         private readonly NotiflyDbContext _context;
 
 
+        //TWILIO NEEDS THIS FORMAT FOR PHONE NUMBER +1734###6670
+
+
+
+
+
         public SmsController(IConfiguration configuration, NotiflyDbContext context)
         {
             TwilioAccountSid = configuration.GetSection("APIKeys")["TwilioAccountSid"];
@@ -40,8 +46,14 @@ namespace Twillo_Test.Controllers
         [HttpPost]
         public TwiMLResult ReceiveText(SmsRequest incomingMessage)
         {
-            
+            string senderNumber = incomingMessage.From;
 
+            if (incomingMessage.Body.Contains("yes") || incomingMessage.Body.Contains("no")) 
+            {
+                
+                AddRSVPToDataBase(incomingMessage);
+            }
+            
             //string id = "08bd85be-3531-4ddb-8814-4d554a016319";
             var messagingResponse = new MessagingResponse();
 
@@ -53,6 +65,12 @@ namespace Twillo_Test.Controllers
             return TwiML(messagingResponse);
 
         }
+
+        public void AddRSVPToDataBase(SmsRequest incomingMessage) 
+        {
+            
+        }
+
 
         public void AddEventToDatabase(string messageBody)
         {

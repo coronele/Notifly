@@ -27,28 +27,14 @@ namespace NotiflyV0._1.Controllers
 
             var user = _context.AspNetUsers.Find(id);
 
-            if(user.PhoneNumber == null)
-            {
-                return View("AddPhoneNumber");
-            }
-            else
-            {
-                return View();
-            }
+            ViewBag.PhoneNumber = user.PhoneNumber;
 
+            return View();
         }
 
-        public IActionResult AddPhoneNumber(string phoneNumber)
-        {
-            string id = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+        
+        
 
-            var user = _context.AspNetUsers.Find(id);
-
-            user.PhoneNumber = phoneNumber;
-
-            return RedirectToAction("Index");
-
-        }
 
         public IActionResult Events()
         {
