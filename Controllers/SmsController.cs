@@ -60,10 +60,8 @@ namespace Twillo_Test.Controllers
 
             }
 
-
+            //isn't doing anything
             var messagingResponse = new MessagingResponse();
-
-
 
             return TwiML(messagingResponse);
 
@@ -74,26 +72,24 @@ namespace Twillo_Test.Controllers
         {
 
             string[] textParts = incomingMessage.Body.Split(" ");
-            bool userRsvp;
 
-            var founduser = _context.GroupMembers.Where(x => x.PhoneNumber == incomingMessage.From).ToList();
+            bool userRsvp = false;
 
-            int memberId = founduser[0].MemberId;
+            var founduser = _context.GroupMembers.Where(x => x.PhoneNumber == incomingMessage.From).First();
 
-            var foundevent = _context.EventTable.Where(y => y.EventId == Int32.Parse(textParts[1])).ToList();
+            int memberId = founduser.MemberId;
 
-            int eventId = foundevent[0].EventId;
+            var foundevent = _context.EventTable.Where(y => y.EventId == Int32.Parse(textParts[1])).First();
+
+            int eventId = foundevent.EventId;
 
             string rsvpResponse = textParts[0].ToLower();
+
             if (rsvpResponse.Contains("yes") || rsvpResponse == "y")
             {
                 userRsvp = true;
             }
-            else if (rsvpResponse.Contains("no") || rsvpResponse == "n")
-            {
-                userRsvp = false;
-            }
-            userRsvp = false;
+            
 
             MemberRsvp newRsvp = new MemberRsvp(memberId, eventId, userRsvp);
 
@@ -125,9 +121,9 @@ namespace Twillo_Test.Controllers
             string eventLoc = textparts[3];
             string groupName = textparts[4];
 
-            //List<Groups> foundGroups = _context.Groups.Where(x => x.GroupName == groupName).ToList();
+            Groups group = _context.Groups.Where(x => x.GroupName == groupName).First();
 
-            EventTable newEvent = new EventTable(userEvent, "Description", 2, eventDateTime, eventVenue, eventLoc, user[0].Id);
+            EventTable newEvent = new EventTable(userEvent, "Description", group.GroupId, eventDateTime, eventVenue, eventLoc, user[0].Id);
 
             _context.EventTable.Add(newEvent);
             _context.SaveChanges();
