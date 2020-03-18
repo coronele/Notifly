@@ -1,0 +1,35 @@
+﻿@model List<EventTable>
+@{
+    ViewData["Title"] = "Events";
+
+}
+
+<h1>Events</h1>
+
+<table>
+    <tr>
+        <th class="sticky-top" style="background-color: forestgreen">Name</th>
+        <th class="sticky-top" style="background-color: forestgreen">Description</th>
+        <th class="sticky-top" style="background-color: forestgreen">Group Name</th>
+        <th class="sticky-top" style="background-color: forestgreen">Date/Time</th>
+        <th class="sticky-top" style="background-color: forestgreen">Venue</th>
+        <th class="sticky-top" style="background-color: forestgreen">Location</th>
+        <th class="sticky-top" style="background-color: forestgreen">Edit Events</th>
+        <th class="sticky-top" style="background-color: forestgreen">Delete Events</th>
+    </tr>
+    @foreach (var m in Model)
+    {
+        <tr>
+            <td>@m.EventName</td>
+            <td>@m.EventDescription</td>
+            <td>@m.GroupId</td>
+            <td>@m.DateAndTime</td>
+            <td>@m.Venue</td>
+            <td>@m.VenueLocation</td>
+            <td><a class="btn" href="../Home/EditEvent?id="></a></td>
+            <td><a class="btn" href="../Home/DeleteEvent?id="></a></td>
+        </tr>
+    }
+
+</table>
+<a href="../Home/AddEvent>"

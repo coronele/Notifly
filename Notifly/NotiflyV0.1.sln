@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29728.190
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotiflyV0.1", "NotiflyV0.1.csproj", "{F067F250-C882-43EA-B7F1-E1188EA61B28}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F067F250-C882-43EA-B7F1-E1188EA61B28}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F067F250-C882-43EA-B7F1-E1188EA61B28}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F067F250-C882-43EA-B7F1-E1188EA61B28}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F067F250-C882-43EA-B7F1-E1188EA61B28}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B8761450-F2AF-49A3-8FC6-56298F407551}
+	EndGlobalSection
+EndGlobal
