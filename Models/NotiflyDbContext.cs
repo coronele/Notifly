@@ -1,6 +1,8 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.Extensions.Configuration;
+
 
 namespace NotiflyV0._1.Models
 {
@@ -10,9 +12,10 @@ namespace NotiflyV0._1.Models
         {
         }
 
-        public NotiflyDbContext(DbContextOptions<NotiflyDbContext> options)
+        public NotiflyDbContext(DbContextOptions<NotiflyDbContext> options, IConfiguration configuration)
             : base(options)
         {
+            Configuration = configuration;
         }
 
         public virtual DbSet<AspNetRoleClaims> AspNetRoleClaims { get; set; }
@@ -27,14 +30,19 @@ namespace NotiflyV0._1.Models
         public virtual DbSet<Groups> Groups { get; set; }
         public virtual DbSet<MemberRsvp> MemberRsvp { get; set; }
 
+        public IConfiguration Configuration { get; }
+
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
             {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
-                optionsBuilder.UseSqlServer("Server=tcp:notifly.database.windows.net,1433;Database=NotiflyDb;User ID=notifly;Password=Camt0n92!;Encrypt=true;Connection Timeout=30");
+
+                optionsBuilder.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
             }
         }
+
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

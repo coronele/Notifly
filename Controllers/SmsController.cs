@@ -48,31 +48,58 @@ namespace Twillo_Test.Controllers
         {
 
             string[] messageParts = incomingMessage.Body.Split(" ");
-            if (messageParts[0].ToLower() == "yes" || messageParts[0].ToLower() == "no") 
+            if (messageParts[0].ToLower() == "yes" || messageParts[0].ToLower() == "no" || messageParts[0].ToLower() == "n" || messageParts[0].ToLower() == "y")
             {
-                
+
                 AddRSVPToDataBase(incomingMessage);
 
             }
-            
+            else
+            {
+                AddEventToDatabase(incomingMessage);
+
+            }
 
 
-
-            //string id = "08bd85be-3531-4ddb-8814-4d554a016319";
             var messagingResponse = new MessagingResponse();
 
-            //string dummyMessage = "Lunch with Clay \n 3/29/21 \n Big Boy's \n Taylor, MI \n The Boys";
 
-            AddEventToDatabase(incomingMessage);
-            
 
             return TwiML(messagingResponse);
 
         }
 
-        public void AddRSVPToDataBase(SmsRequest incomingMessage) 
+
+        public void AddRSVPToDataBase(SmsRequest incomingMessage)
         {
-            
+
+            string[] textParts = incomingMessage.Body.Split(" ");
+            bool userRsvp;
+
+            var founduser = _context.GroupMembers.Where(x => x.PhoneNumber == incomingMessage.From).ToList();
+
+            int memberId = founduser[0].MemberId;
+
+            var foundevent = _context.EventTable.Where(y => y.EventId == Int32.Parse(textParts[1])).ToList();
+
+            int eventId = foundevent[0].EventId;
+
+            string rsvpResponse = textParts[0].ToLower();
+            if (rsvpResponse.Contains("yes") || rsvpResponse == "y")
+            {
+                userRsvp = true;
+            }
+            else if (rsvpResponse.Contains("no") || rsvpResponse == "n")
+            {
+                userRsvp = false;
+            }
+            userRsvp = false;
+
+            MemberRsvp newRsvp = new MemberRsvp(memberId, eventId, userRsvp);
+
+            _context.MemberRsvp.Add(newRsvp);
+            _context.SaveChanges();
+
         }
 
 
@@ -92,7 +119,7 @@ namespace Twillo_Test.Controllers
             }
 
             string userEvent = textparts[0];
-            
+
             DateTime eventDateTime = DateTime.Parse(textparts[1]);
             string eventVenue = textparts[2];
             string eventLoc = textparts[3];
@@ -103,8 +130,7 @@ namespace Twillo_Test.Controllers
             EventTable newEvent = new EventTable(userEvent, "Description", 2, eventDateTime, eventVenue, eventLoc, user[0].Id);
 
             _context.EventTable.Add(newEvent);
-
-            
+            _context.SaveChanges();
 
         }
 
@@ -128,7 +154,7 @@ namespace Twillo_Test.Controllers
         public ActionResult SendGroupText()
         {
             TwilioClient.Init(TwilioAccountSid, TwilioAuthToken);
-            string[] groupNumbers = { "+12487196559", "+17348876670" };
+            string[] groupNumbers = { "+12487196559", "+12488541947" };
             foreach (var n in groupNumbers)
             {
                 var messageOptions = new CreateMessageOptions(
@@ -141,6 +167,9 @@ namespace Twillo_Test.Controllers
             }
             return new OkResult();
         }
+
+
+
 
         public ActionResult SendWelcomeText()
         {
@@ -158,14 +187,7 @@ namespace Twillo_Test.Controllers
             return new OkResult();
         }
 
-        [HttpPost]
-        public ActionResult SaveText([FromBody] string Body)
-        {
-
-            var response = new MessagingResponse();
-            response.Message("sdf");
-            return new ContentResult { Content = response.ToString(), ContentType = "application/xml" };
-        }
+        
     }
 }
 

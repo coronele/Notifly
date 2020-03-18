@@ -5,6 +5,14 @@ namespace NotiflyV0._1.Models
 {
     public partial class MemberRsvp
     {
+        public MemberRsvp(int memberId, int eventId, bool rsvp)
+        {
+            MemberId = memberId;
+            EventId = eventId;
+            Rsvp = rsvp;
+        }
+
+
         public int MemberId { get; set; }
         public int EventId { get; set; }
         public bool Rsvp { get; set; }
@@ -14,3 +22,5 @@ namespace NotiflyV0._1.Models
         public virtual GroupMembers Member { get; set; }
     }
 }
+
+
