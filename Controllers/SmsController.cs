@@ -46,20 +46,24 @@ namespace Twillo_Test.Controllers
         [HttpPost]
         public TwiMLResult ReceiveText(SmsRequest incomingMessage)
         {
-            string senderNumber = incomingMessage.From;
 
-            if (incomingMessage.Body.Contains("yes") || incomingMessage.Body.Contains("no")) 
+            string[] messageParts = incomingMessage.Body.Split(" ");
+            if (messageParts[0].ToLower() == "yes" || messageParts[0].ToLower() == "no") 
             {
                 
                 AddRSVPToDataBase(incomingMessage);
+
             }
             
+
+
+
             //string id = "08bd85be-3531-4ddb-8814-4d554a016319";
             var messagingResponse = new MessagingResponse();
 
             //string dummyMessage = "Lunch with Clay \n 3/29/21 \n Big Boy's \n Taylor, MI \n The Boys";
 
-            AddEventToDatabase(incomingMessage.Body);
+            AddEventToDatabase(incomingMessage);
             
 
             return TwiML(messagingResponse);
@@ -72,10 +76,12 @@ namespace Twillo_Test.Controllers
         }
 
 
-        public void AddEventToDatabase(string messageBody)
+        public void AddEventToDatabase(SmsRequest message)
         {
-            string id = "08bd85be-3531-4ddb-8814-4d554a016319";
-            StringReader reader = new StringReader(messageBody);
+            string userPhoneNumber = message.From;
+            List<AspNetUsers> user = _context.AspNetUsers.Where(x => x.PhoneNumber == userPhoneNumber).ToList();
+
+            StringReader reader = new StringReader(message.Body);
             string line = reader.ReadLine();
             List<string> textparts = new List<string>();
 
@@ -86,6 +92,7 @@ namespace Twillo_Test.Controllers
             }
 
             string userEvent = textparts[0];
+            
             DateTime eventDateTime = DateTime.Parse(textparts[1]);
             string eventVenue = textparts[2];
             string eventLoc = textparts[3];
@@ -93,13 +100,12 @@ namespace Twillo_Test.Controllers
 
             //List<Groups> foundGroups = _context.Groups.Where(x => x.GroupName == groupName).ToList();
 
-            EventTable newEvent = new EventTable(userEvent, "Description", 2, eventDateTime, eventVenue, eventLoc, id);
+            EventTable newEvent = new EventTable(userEvent, "Description", 2, eventDateTime, eventVenue, eventLoc, user[0].Id);
 
             _context.EventTable.Add(newEvent);
 
             
 
-            
         }
 
 

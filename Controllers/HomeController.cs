@@ -23,11 +23,11 @@ namespace NotiflyV0._1.Controllers
 
         public IActionResult Index()
         {
-            string id = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            //string id = User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
-            var user = _context.AspNetUsers.Find(id);
+            //var user = _context.AspNetUsers.Find(id);
 
-            ViewBag.PhoneNumber = user.PhoneNumber;
+            //ViewBag.PhoneNumber = user.PhoneNumber;
 
             return View();
         }
