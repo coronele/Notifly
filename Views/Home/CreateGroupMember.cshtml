@@ -1,0 +1,42 @@
+﻿
+
+@{
+
+    int counter1 = ViewBag.Counter;
+
+    if (ViewBag.GroupMembers != null && ViewBag.GroupMembers.Count > 0)
+    {
+
+    <div class="alert alert-success" role="alert">
+        <strong>Success!</strong> You just added @ViewBag.GroupMembers[counter1 - 1].MemberName (@ViewBag.GroupMembers[counter1 - 1].PhoneNumber) to your group!
+    </div>
+    }
+    
+    int counter = ViewBag.Counter + 1;
+    
+    }
+
+
+<h1>CreateGroupMember</h1>
+<br />
+<br />
+<br />
+<form action="../Home/CreateGroupMember" method="post">
+    <br />
+    <br />
+    <input type="text" name="memberName" value="" placeholder="Member Name " />
+    <input type="text" name="phoneNumber" value="" placeholder="+11234561790" />
+    <input type="hidden" name="groupId" value="@ViewBag.GroupId" />
+    <input type="hidden" name="counter" value="@counter" />
+    <br />
+    <br />
+    
+    <input class="btn btn-primary" type="submit" value="Add Group Member" />
+</form>
+
+<br />
+<br />
+<button class="btn btn-success" onclick="window.location.href='../Home/Groups'">Save Changes</button>
+
+
+

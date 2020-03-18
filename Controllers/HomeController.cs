@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -15,7 +16,7 @@ namespace NotiflyV0._1.Controllers
     public class HomeController : Controller
     {
         private readonly NotiflyDbContext _context;
-        
+
         public HomeController(NotiflyDbContext context)
         {
             _context = context;
@@ -28,6 +29,9 @@ namespace NotiflyV0._1.Controllers
 
         public IActionResult Events()
         {
+
+
+
             return View(_context.EventTable.ToList());
         }
 
@@ -35,7 +39,7 @@ namespace NotiflyV0._1.Controllers
         {
             //Created a button in the Events View to use this function. 
             EventTable find = _context.EventTable.Find(id);
-            if(find != null)
+            if (find != null)
             {
                 _context.Remove(find);
                 _context.SaveChanges();
@@ -47,17 +51,20 @@ namespace NotiflyV0._1.Controllers
         //{
         //    return View();
         //}
-
-        [HttpPost]
+        
+        
         //public IActionResult CreateEvent()
         //{
 
 
         //}
 
-        public IActionResult ListOfGroups()
+        public IActionResult Groups()
         {
+            
             return View(_context.Groups.ToList());
+
+
         }
 
         [HttpGet] //Do i need this part?
@@ -67,13 +74,61 @@ namespace NotiflyV0._1.Controllers
         }
 
         [HttpPost]
-        public IActionResult CreateGroup(Groups addGroup)
+        public IActionResult CreateGroup(string groupName)
         {
             //Create a form that will add a new group to the events table
             //but also would like it to display the list of groups
-            _context.Groups.Add(addGroup);
+
+            string id = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+            Groups newGroup = new Groups(groupName, id);
+
+
+            _context.Groups.Add(newGroup);
+
             _context.SaveChanges();
-            return RedirectToAction("ListOfGroups");
+
+            return RedirectToAction("CreateGroupMember", newGroup);
+
+
+
+        }
+
+
+
+        [HttpGet]
+        public IActionResult CreateGroupMember(Groups newGroup)
+        {
+            ViewBag.GroupMembers = _context.GroupMembers.Where(x => x.Groups == newGroup.GroupId.ToString()).ToList(); 
+            
+            ViewBag.GroupId = newGroup.GroupId;
+
+            ViewBag.Counter = 0;
+
+            return View(newGroup);
+
+        }
+
+
+        
+        [HttpPost]
+        public IActionResult CreateGroupMember(string memberName, string phoneNumber, string groupId, int counter)
+        {
+
+            GroupMembers newMember = new GroupMembers(memberName, groupId, phoneNumber);
+
+            _context.GroupMembers.Add(newMember);
+            _context.SaveChanges();
+
+            int groupIdNumber = int.Parse(groupId);
+            Groups group = _context.Groups.Find(groupIdNumber);
+            
+            ViewBag.GroupMembers = _context.GroupMembers.Where(x => x.Groups == group.GroupId.ToString()).ToList();
+            ViewBag.GroupId = groupIdNumber;
+            ViewBag.Counter = counter;
+
+            return View("CreateGroupMember");
+
         }
 
         public IActionResult RemoveMember(int id)
@@ -86,6 +141,21 @@ namespace NotiflyV0._1.Controllers
             if (findMember != null)
             {
                 _context.Groups.Remove(findMember);
+                _context.SaveChanges();
+            }
+
+            return RedirectToAction("Groups");
+        }
+
+
+       
+        public IActionResult RemoveGroup(int groupId) 
+        {
+            Groups foundGroup = _context.Groups.Find(groupId);
+
+            if (foundGroup != null)
+            {
+                _context.Groups.Remove(foundGroup);
                 _context.SaveChanges();
             }
 

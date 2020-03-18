@@ -10,7 +10,7 @@ namespace NotiflyV0._1.Models
             MemberRsvp = new HashSet<MemberRsvp>();
         }
 
-        public EventTable(string eventName, string description, int groupId, DateTime dateAndTime, string venue, string venueLocation, string userId)
+        public EventTable(string eventName, string description, int groupId, DateTime dateAndTime, string venue, string venueLocation, string userId, string groupName)
         {
             EventName = eventName;
             EventDescription = description;
@@ -19,6 +19,7 @@ namespace NotiflyV0._1.Models
             Venue = venue;
             VenueLocation = venueLocation;
             UserId = userId;
+            GroupName = groupName;
             
         }
 
@@ -30,6 +31,7 @@ namespace NotiflyV0._1.Models
         public string Venue { get; set; }
         public string VenueLocation { get; set; }
         public string UserId { get; set; }
+        public string GroupName { get; set; }
 
         public virtual Groups Group { get; set; }
         public virtual AspNetUsers User { get; set; }

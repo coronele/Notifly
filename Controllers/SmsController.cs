@@ -102,7 +102,7 @@ namespace Twillo_Test.Controllers
         public void AddEventToDatabase(SmsRequest message)
         {
             string userPhoneNumber = message.From;
-            List<AspNetUsers> user = _context.AspNetUsers.Where(x => x.PhoneNumber == userPhoneNumber).ToList();
+            var user = _context.AspNetUsers.Where(x => x.PhoneNumber == userPhoneNumber).First();
 
             StringReader reader = new StringReader(message.Body);
             string line = reader.ReadLine();
@@ -116,6 +116,9 @@ namespace Twillo_Test.Controllers
 
             string userEvent = textparts[0];
 
+            //Date Time Format: ("MM/dd/yyyy h:mm tt") (05/29/2015 5:50 AM)
+
+
             DateTime eventDateTime = DateTime.Parse(textparts[1]);
             string eventVenue = textparts[2];
             string eventLoc = textparts[3];
@@ -123,7 +126,7 @@ namespace Twillo_Test.Controllers
 
             Groups group = _context.Groups.Where(x => x.GroupName == groupName).First();
 
-            EventTable newEvent = new EventTable(userEvent, "Description", group.GroupId, eventDateTime, eventVenue, eventLoc, user[0].Id);
+            EventTable newEvent = new EventTable(userEvent, "Description", group.GroupId, eventDateTime, eventVenue, eventLoc, user.Id, group.GroupName);
 
             _context.EventTable.Add(newEvent);
             _context.SaveChanges();
@@ -186,5 +189,3 @@ namespace Twillo_Test.Controllers
         
     }
 }
-
-
