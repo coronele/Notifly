@@ -48,27 +48,74 @@ namespace Twillo_Test.Controllers
         {
             string senderNumber = incomingMessage.From;
 
-            if (incomingMessage.Body.Contains("yes") || incomingMessage.Body.Contains("no")) 
+            // For validating response
+            StringReader reader = new StringReader(incomingMessage.Body);
+            string line = reader.ReadLine();
+            List<string> textparts = new List<string>();
+            
+            while (line != null)
             {
-                
+                textparts.Add(line);
+                line = reader.ReadLine();
+            }
+
+            string evalText = textparts.First().ToLower();
+
+            if (evalText.Contains("yes") || evalText.Contains("no") || (evalText == "n") || (evalText == "y"))
+            {
                 AddRSVPToDataBase(incomingMessage);
             }
-            
-            //string id = "08bd85be-3531-4ddb-8814-4d554a016319";
-            var messagingResponse = new MessagingResponse();
+            else
+            {
+                //string id = "08bd85be-3531-4ddb-8814-4d554a016319";
+                var messagingResponse = new MessagingResponse();
 
-            //string dummyMessage = "Lunch with Clay \n 3/29/21 \n Big Boy's \n Taylor, MI \n The Boys";
+                //string dummyMessage = "Lunch with Clay \n 3/29/21 \n Big Boy's \n Taylor, MI \n The Boys";
 
-            AddEventToDatabase(incomingMessage.Body);
-            
-
-            return TwiML(messagingResponse);
-
+                AddEventToDatabase(incomingMessage.Body);
+                return TwiML(messagingResponse);
+            }
         }
 
         public void AddRSVPToDataBase(SmsRequest incomingMessage) 
         {
-            
+            // Placeholder id
+            string id = "08bd85be-3531-4ddb-8814-4d554a016319";
+
+            StringReader reader = new StringReader(incomingMessage.Body);
+            string line = reader.ReadLine();
+            List<string> textparts = new List<string>();
+            bool userRsvp;
+
+            while (line != null)
+            {
+                textparts.Add(line);
+                line = reader.ReadLine();
+            }
+
+            var founduser = _context.AspNetUsers.Where(x => x.PhoneNumber == incomingMessage.From).ToList();
+
+            string recUserId = founduser.First().Id;
+
+            var foundevent = _context.EventTable.Where(y => y.EventId == Int32.Parse(textparts[0]));
+
+            int recEventId = foundevent.First().EventId;
+
+            string rsvpResponse = textparts[1].ToLower();
+            if ((rsvpResponse.Contains("yes") || (rsvpResponse == "y")))
+            {
+                userRsvp = true;
+            }
+            else // No validation yet for invalid response
+            {
+                userRsvp = false;
+            }
+
+            MemberRsvp newRsvp = new MemberRsvp(recUserId, recEventId, userRsvp);
+
+            _context.MemberRsvp.Add(newRsvp);
+            _context.SaveChanges();
+
         }
 
 
