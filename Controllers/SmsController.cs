@@ -31,7 +31,6 @@ namespace Twillo_Test.Controllers
 
 
 
-
         public SmsController(IConfiguration configuration, NotiflyDbContext context)
         {
             TwilioAccountSid = configuration.GetSection("APIKeys")["TwilioAccountSid"];
@@ -89,7 +88,19 @@ namespace Twillo_Test.Controllers
             {
                 userRsvp = true;
             }
+
+            //find if rsvp already exists in database
+            List<MemberRsvp> rsvpDupes = _context.MemberRsvp.Where(x => x.MemberId == memberId).Where(x => x.EventId == eventId).ToList();
             
+            //delete all found duplicates (should only be one).  
+            if(rsvpDupes.Count > 0)
+            {
+                foreach(var r in rsvpDupes)
+                {
+                    _context.MemberRsvp.Remove(r);
+                    _context.SaveChanges();
+                }
+            }
 
             MemberRsvp newRsvp = new MemberRsvp(memberId, eventId, userRsvp);
 
@@ -131,61 +142,30 @@ namespace Twillo_Test.Controllers
             _context.EventTable.Add(newEvent);
             _context.SaveChanges();
 
+            //Code for sending group text
+
+            List<GroupMembers> groupMembers = _context.GroupMembers.Where(x => x.Groups == group.GroupId).ToList();
+            EventTable tempEvent = _context.EventTable.Where(x => x.EventName == userEvent).Where(x => x.GroupId == group.GroupId).First();
+            
+
+            foreach (var g in groupMembers)
+            {
+                SendText($"Hi, {g.MemberName}! You've just been invited to {userEvent} on {eventDateTime.ToString()}  at {eventVenue}, {eventLoc}. Respond with 'yes {tempEvent.EventId}' if you accept, and 'no {tempEvent.EventId}' if you decline.", g.PhoneNumber);
+            }
+
+
         }
 
-
-
-
-        public ActionResult SendText(string body, string number)
+        public void SendText(string body, string number)
         {
             TwilioClient.Init(TwilioAccountSid, TwilioAuthToken);
 
             var messageOptions = new CreateMessageOptions(
-            new PhoneNumber("+17348876670"));
-
+            new PhoneNumber(number));
             messageOptions.From = new PhoneNumber("+19854413010");
             messageOptions.Body = body;
-
-            var message = MessageResource.Create(messageOptions);
-            return new OkResult();
-        }
-
-        public ActionResult SendGroupText()
-        {
-            TwilioClient.Init(TwilioAccountSid, TwilioAuthToken);
-            string[] groupNumbers = { "+12487196559", "+12488541947" };
-            foreach (var n in groupNumbers)
-            {
-                var messageOptions = new CreateMessageOptions(
-                new PhoneNumber(n));
-
-                messageOptions.From = new PhoneNumber("+19854413010");
-                messageOptions.Body = "Proof for Erwin";
-
-                var message = MessageResource.Create(messageOptions);
-            }
-            return new OkResult();
-        }
-
-
-
-
-        public ActionResult SendWelcomeText()
-        {
-
-            TwilioClient.Init(TwilioAccountSid, TwilioAuthToken);
-
-            var messageOptions = new CreateMessageOptions(
-            new PhoneNumber("+17348876670"));
-
-            messageOptions.From = new PhoneNumber("+19854413010");
-            messageOptions.Body = $"Hey there, Jon. Clay set up an event at 2:00 P.M. Would you like to come? Reply with 'yes' if you would and 'no' if you don't want to. Reply with 'stop' if you don't want anymore texts.";
-
             var message = MessageResource.Create(messageOptions);
 
-            return new OkResult();
         }
-
-        
     }
 }

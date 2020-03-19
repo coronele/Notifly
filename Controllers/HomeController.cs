@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NotiflyV0._1.Models;
-
-
-
+using Twilio;
+using Twilio.Rest.Api.V2010.Account;
+using Twilio.Types;
 
 namespace NotiflyV0._1.Controllers
 {
@@ -94,12 +94,14 @@ namespace NotiflyV0._1.Controllers
 
         }
 
+        
+
 
 
         [HttpGet]
         public IActionResult CreateGroupMember(Groups newGroup)
         {
-            ViewBag.GroupMembers = _context.GroupMembers.Where(x => x.Groups == newGroup.GroupId.ToString()).ToList(); 
+            ViewBag.GroupMembers = _context.GroupMembers.Where(x => x.Groups == newGroup.GroupId).ToList(); 
             
             ViewBag.GroupId = newGroup.GroupId;
 
@@ -112,7 +114,7 @@ namespace NotiflyV0._1.Controllers
 
         
         [HttpPost]
-        public IActionResult CreateGroupMember(string memberName, string phoneNumber, string groupId, int counter)
+        public IActionResult CreateGroupMember(string memberName, string phoneNumber, int groupId, int counter)
         {
 
             GroupMembers newMember = new GroupMembers(memberName, groupId, phoneNumber);
@@ -120,11 +122,11 @@ namespace NotiflyV0._1.Controllers
             _context.GroupMembers.Add(newMember);
             _context.SaveChanges();
 
-            int groupIdNumber = int.Parse(groupId);
-            Groups group = _context.Groups.Find(groupIdNumber);
             
-            ViewBag.GroupMembers = _context.GroupMembers.Where(x => x.Groups == group.GroupId.ToString()).ToList();
-            ViewBag.GroupId = groupIdNumber;
+            Groups group = _context.Groups.Find(groupId);
+            
+            ViewBag.GroupMembers = _context.GroupMembers.Where(x => x.Groups == group.GroupId).ToList();
+            ViewBag.GroupId = groupId;
             ViewBag.Counter = counter;
 
             return View("CreateGroupMember");
@@ -151,6 +153,12 @@ namespace NotiflyV0._1.Controllers
        
         public IActionResult RemoveGroup(int groupId) 
         {
+
+            //!!!!!!!!!!!!NEEDS VALIDATION FOR SEEING IF CURRENT EVENT EXISTS AND DELETING ALL EVENTS ASSOCIATED WITH GROUP!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+            
+
+
             Groups foundGroup = _context.Groups.Find(groupId);
 
             if (foundGroup != null)
