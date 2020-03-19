@@ -89,9 +89,6 @@ namespace NotiflyV0._1.Controllers
             _context.SaveChanges();
 
             return RedirectToAction("CreateGroupMember", newGroup);
-
-
-
         }
 
 
@@ -99,7 +96,7 @@ namespace NotiflyV0._1.Controllers
         [HttpGet]
         public IActionResult CreateGroupMember(Groups newGroup)
         {
-            ViewBag.GroupMembers = _context.GroupMembers.Where(x => x.Groups == newGroup.GroupId.ToString()).ToList(); 
+            ViewBag.GroupMembers = _context.GroupMembers.Where(x => x.Groups == newGroup.GroupId).ToList(); 
             
             ViewBag.GroupId = newGroup.GroupId;
 
@@ -112,7 +109,7 @@ namespace NotiflyV0._1.Controllers
 
         
         [HttpPost]
-        public IActionResult CreateGroupMember(string memberName, string phoneNumber, string groupId, int counter)
+        public IActionResult CreateGroupMember(string memberName, string phoneNumber, int groupId, int counter)
         {
 
             GroupMembers newMember = new GroupMembers(memberName, groupId, phoneNumber);
@@ -120,10 +117,10 @@ namespace NotiflyV0._1.Controllers
             _context.GroupMembers.Add(newMember);
             _context.SaveChanges();
 
-            int groupIdNumber = int.Parse(groupId);
+            int groupIdNumber = groupId;
             Groups group = _context.Groups.Find(groupIdNumber);
             
-            ViewBag.GroupMembers = _context.GroupMembers.Where(x => x.Groups == group.GroupId.ToString()).ToList();
+            ViewBag.GroupMembers = _context.GroupMembers.Where(x => x.Groups == group.GroupId).ToList();
             ViewBag.GroupId = groupIdNumber;
             ViewBag.Counter = counter;
 
@@ -144,11 +141,39 @@ namespace NotiflyV0._1.Controllers
                 _context.SaveChanges();
             }
 
-            return RedirectToAction("Groups");
+            return RedirectToAction("GroupDetails");
+        }
+
+        [HttpGet]
+        public IActionResult EditMember(int id)
+        {
+            GroupMembers findMember = _context.GroupMembers.Find(id);
+            if (findMember != null)
+            {
+                return View(findMember);
+            }
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult EditMember(GroupMembers editMember)
+        {
+            GroupMembers dbGroupMember = _context.GroupMembers.Find(editMember.MemberId);
+
+            if (ModelState.IsValid)
+            {
+                dbGroupMember.MemberName = editMember.MemberName;
+                dbGroupMember.PhoneNumber = editMember.PhoneNumber;
+
+                _context.Entry(dbGroupMember).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                _context.Update(dbGroupMember);
+                _context.SaveChanges();
+            }
+            return RedirectToAction("GroupDetails");
         }
 
 
-       
+
         public IActionResult RemoveGroup(int groupId) 
         {
             Groups foundGroup = _context.Groups.Find(groupId);
@@ -160,6 +185,12 @@ namespace NotiflyV0._1.Controllers
             }
 
             return RedirectToAction("Groups");
+        }
+
+        public IActionResult GroupDetails(int groupId)
+        {
+            List<GroupMembers> members = _context.GroupMembers.Where(x => x.Groups == groupId).ToList();
+            return View(members);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

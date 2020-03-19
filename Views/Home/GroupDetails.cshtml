@@ -1,0 +1,26 @@
+﻿
+@{
+    ViewData["Title"] = "GroupDetails";
+}
+
+@model List<GroupMembers>
+
+<h1>Group Members</h1>
+
+<table class="table table-bordered table-striped">
+    <tr>
+        <th>Name</th>
+        <th>Phone Number</th>
+        <th>Update Info</th>
+        <th>Delete Member</th>
+    </tr>
+    @foreach (GroupMembers member in Model)
+    {
+<tr>
+    <td>@member.MemberName</td>
+    <td>@member.PhoneNumber</td>
+    <td><button class="btn btn-primary" onclick="window.location.href='../Home/EditMember?id=@member.MemberId'">Edit Member</button></td>
+    <td><button class="btn btn-danger" onclick="window.location.href='../Home/RemoveMember?id=@member.MemberId'">Remove Member</button></td>
+</tr>
+    }
+    </table>

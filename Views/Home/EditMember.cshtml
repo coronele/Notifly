@@ -1,0 +1,24 @@
+﻿
+@{
+    ViewData["Title"] = "EditMember";
+}
+
+@model GroupMembers
+
+<h1>Edit Member Details</h1>
+
+<br />
+<br />
+<br />
+<form action="../Home/EditMember" method="post">
+    <br />
+    <br />
+    <label>Name: </label><input type="text" name="memberName" value="" placeholder="@Model.MemberName" />
+    <br />
+    <label>Phone Number:</label><input type="text" name="phoneNumber" value="" placeholder="@Model.PhoneNumber" />
+    <input type="hidden" name="groupId" value="@Model.MemberId" />
+    <br />
+    <br />
+
+    <input class="btn btn-primary" type="submit" value="Edit Group Member" />
+</form>
