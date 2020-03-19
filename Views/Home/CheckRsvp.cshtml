@@ -1,0 +1,32 @@
+﻿@model List<MemberRsvp>
+@{
+    ViewData["Title"] = "CheckRsvp";
+}
+<h1>Rsvp</h1>
+
+<table class="table table-bordered table-striped table-light">
+    <tr>
+        <th>MemberId</th>
+        <th>Event Id</th>
+        <th>Rsvp</th>
+        @*<th>Edit Rsvp</th>*@
+    </tr>
+    @foreach (var rsvp in Model)
+    {
+        <tr>
+            <td>@rsvp.MemberId</td>
+            <td>@rsvp.EventId</td>
+            @if (rsvp.Rsvp == true)
+            {
+                <td>Yes, I'm going!</td>
+            }
+            else
+            {
+                <td>No</td>
+            }
+        </tr>
+    }
+</table>
+
+
+

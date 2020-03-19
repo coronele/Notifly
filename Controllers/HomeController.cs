@@ -170,6 +170,15 @@ namespace NotiflyV0._1.Controllers
             return RedirectToAction("Groups");
         }
 
+        public IActionResult GetExplanation()
+        {
+            return View();
+        }
+
+        public IActionResult CheckRsvp()
+        {
+            return View(_context.MemberRsvp.ToList());
+        }
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
