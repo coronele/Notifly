@@ -14,6 +14,8 @@
         <th>Date</th>
         <th>Venue</th>
         <th>Location</th>
+        <th>Edit</th>
+        <th>Delete</th>
     </tr>
     @foreach (var m in Model)
     {
@@ -24,6 +26,15 @@
             <td>@m.DateAndTime</td>
             <td>@m.Venue</td>
             <td>@m.VenueLocation</td>
+            <td>
+                <!--When we Edit or Cancel Event, can we send the users a message knowing what's happening-->
+            <a href="../Home/EditEvent?id=@m.EventId">Edit Event</a>
+            </td>
+            <td>
+            <a href="../Home/DeleteEvent?id=@m.EventId">Cancel Event</a>
+            </td>
+            
+
         </tr>
     }
 

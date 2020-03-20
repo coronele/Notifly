@@ -29,9 +29,6 @@ namespace NotiflyV0._1.Controllers
 
         public IActionResult Events()
         {
-
-
-
             return View(_context.EventTable.ToList());
         }
 
@@ -67,7 +64,7 @@ namespace NotiflyV0._1.Controllers
 
         }
 
-        [HttpGet] //Do i need this part?
+        [HttpGet] 
         public IActionResult CreateGroup()
         {
             return View();
