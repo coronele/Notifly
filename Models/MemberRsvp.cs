@@ -17,9 +17,9 @@ namespace NotiflyV0._1.Models
         public int EventId { get; set; }
         public bool Rsvp { get; set; }
         public int Rsvpid { get; set; }
-
         public virtual EventTable Event { get; set; }
         public virtual GroupMembers Member { get; set; }
+
     }
 }
 
