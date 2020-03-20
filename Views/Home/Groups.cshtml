@@ -13,7 +13,7 @@
     {
         <tr>
             <td>@g.GroupName</td>
-            <td><button class="btn btn-primary" onclick="window.location.href='../Home/GroupDetails'">Group Details</button></td>
+            <td><button class="btn btn-primary" onclick="window.location.href='../Home/GroupDetails?groupId=@g.GroupId'">Group Details</button></td>
             <td><button class="btn btn-danger" onclick="window.location.href='../Home/RemoveGroup?groupId=@g.GroupId'">Remove Group</button></td>
         </tr>
     }
