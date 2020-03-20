@@ -24,7 +24,27 @@ namespace NotiflyV0._1.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            string id = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            List<EventTable> events = _context.EventTable.Where(x => x.UserId == id).ToList();
+            
+            List<EventTable> dueEvents = TimeManager.ListDueEvents(events);
+
+            //if there are any due events, go to send reminders
+            if(dueEvents.Count > 0)
+            {
+                return RedirectToAction("../Sms/SendReminder", dueEvents);
+            }
+            //otherwise return to normal view.
+            else
+            {
+                return View();
+
+            }
+
+
+
+
+
         }
 
         public IActionResult Events()
@@ -102,7 +122,7 @@ namespace NotiflyV0._1.Controllers
         [HttpGet]
         public IActionResult CreateGroupMember(Groups newGroup)
         {
-            ViewBag.GroupMembers = _context.GroupMembers.Where(x => x.Groups == newGroup.GroupId.ToString()).ToList();
+            ViewBag.GroupMembers = _context.GroupMembers.Where(x => x.Groups == newGroup.GroupId).ToList();
 
             ViewBag.GroupId = newGroup.GroupId;
 
@@ -114,8 +134,10 @@ namespace NotiflyV0._1.Controllers
 
 
 
+
+
         [HttpPost]
-        public IActionResult CreateGroupMember(string memberName, string phoneNumber, string groupId, int counter)
+        public IActionResult CreateGroupMember(string memberName, string phoneNumber, int groupId, int counter)
         {
 
             GroupMembers newMember = new GroupMembers(memberName, groupId, phoneNumber);
@@ -123,16 +145,18 @@ namespace NotiflyV0._1.Controllers
             _context.GroupMembers.Add(newMember);
             _context.SaveChanges();
 
-            int groupIdNumber = int.Parse(groupId);
-            Groups group = _context.Groups.Find(groupIdNumber);
+            
+            Groups group = _context.Groups.Find(groupId);
 
-            ViewBag.GroupMembers = _context.GroupMembers.Where(x => x.Groups == group.GroupId.ToString()).ToList();
-            ViewBag.GroupId = groupIdNumber;
+            ViewBag.GroupMembers = _context.GroupMembers.Where(x => x.Groups == group.GroupId).ToList();
+            ViewBag.GroupId = groupId;
             ViewBag.Counter = counter;
 
             return View("CreateGroupMember");
 
         }
+
+
 
         public IActionResult RemoveMember(int id)
         {

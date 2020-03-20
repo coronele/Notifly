@@ -54,9 +54,9 @@ namespace Twillo_Test.Controllers
 
             }
 
-            else if(incomingMessage.Body == "?" || incomingMessage.Body == "h")
+            else if (incomingMessage.Body == "?" || incomingMessage.Body == "h")
             {
-                SendText($"This is Notifly's format for creating events. Everything must be on a new line: \n \n Event Name \n Event Date, (ex. 05/29/2015 5:50 AM) \n The Event Venue (ex. 'Red Robin') \n Event Location (ex. 'Trenton', MI or '48183') \n The Group Name",incomingMessage.From);
+                SendText($"This is Notifly's format for creating events. Everything must be on a new line: \n \n Event Name \n Event Date, (ex. 05/29/2015 5:50 AM) \n The Event Venue (ex. 'Red Robin') \n Event Location (ex. 'Trenton', MI or '48183') \n The Group Name", incomingMessage.From);
                 SendText($"Please refer to our documentation page on our app on how to create a group so that you can start making events!", incomingMessage.From);
 
             }
@@ -82,9 +82,9 @@ namespace Twillo_Test.Controllers
 
             bool userRsvp = false;
 
-            var founduser = _context.GroupMembers.Where(x => x.PhoneNumber == incomingMessage.From).First();
+            var foundGroupMember = _context.GroupMembers.Where(x => x.PhoneNumber == incomingMessage.From).First();
 
-            int memberId = founduser.MemberId;
+            int memberId = foundGroupMember.MemberId;
 
             var foundevent = _context.EventTable.Where(y => y.EventId == Int32.Parse(textParts[1])).First();
 
@@ -99,18 +99,18 @@ namespace Twillo_Test.Controllers
 
             //find if rsvp already exists in database
             List<MemberRsvp> rsvpDupes = _context.MemberRsvp.Where(x => x.MemberId == memberId).Where(x => x.EventId == eventId).ToList();
-            
+
             //delete all found duplicates (should only be one).  
-            if(rsvpDupes.Count > 0)
+            if (rsvpDupes.Count > 0)
             {
-                foreach(var r in rsvpDupes)
+                foreach (var r in rsvpDupes)
                 {
                     _context.MemberRsvp.Remove(r);
                     _context.SaveChanges();
                 }
             }
 
-            MemberRsvp newRsvp = new MemberRsvp(memberId, eventId, userRsvp);
+            MemberRsvp newRsvp = new MemberRsvp(memberId, eventId, userRsvp, foundGroupMember.MemberName);
 
             _context.MemberRsvp.Add(newRsvp);
             _context.SaveChanges();
@@ -145,7 +145,7 @@ namespace Twillo_Test.Controllers
 
             Groups group = _context.Groups.Where(x => x.GroupName == groupName).First();
 
-            EventTable newEvent = new EventTable(userEvent, "Description", group.GroupId, eventDateTime, eventVenue, eventLoc, user.Id, group.GroupName);
+            EventTable newEvent = new EventTable(userEvent, "Description", group.GroupId, eventDateTime, eventVenue, eventLoc, user.Id, group.GroupName, eventDateTime);
 
             _context.EventTable.Add(newEvent);
             _context.SaveChanges();
@@ -154,17 +154,14 @@ namespace Twillo_Test.Controllers
 
             List<GroupMembers> groupMembers = _context.GroupMembers.Where(x => x.Groups == group.GroupId).ToList();
             EventTable tempEvent = _context.EventTable.Where(x => x.EventName == userEvent).Where(x => x.GroupId == group.GroupId).First();
-            
-            if(user != null)
+
+            if (user != null)
             {
                 foreach (var g in groupMembers)
                 {
                     SendText($"Hi, {g.MemberName}! You've just been invited to {userEvent} on {eventDateTime.ToString()}  at {eventVenue}, {eventLoc}. Respond with 'yes {tempEvent.EventId}' if you accept, and 'no {tempEvent.EventId}' if you decline.", g.PhoneNumber);
                 }
             }
-            
-
-
         }
 
 
@@ -181,5 +178,63 @@ namespace Twillo_Test.Controllers
             var message = MessageResource.Create(messageOptions);
 
         }
+
+        public IActionResult SendReminder(List<EventTable> dueEvents)
+        {
+            foreach (var d in dueEvents)
+            {
+                if (d.NotificationDate > DateTime.Now)
+                {
+
+                    TimeSpan timeRemainingForEvent = DateTime.Now - d.DateAndTime;
+                    string timeLeft;
+                    if (timeRemainingForEvent.TotalDays < 1)
+                    {
+                        if(timeRemainingForEvent.Hours > 1)
+                        {
+                            timeLeft = timeRemainingForEvent.Hours.ToString();
+                            timeLeft = timeLeft + " hours";
+                        }
+                        else
+                        {
+                            timeLeft = timeRemainingForEvent.Hours.ToString();
+                            timeLeft = timeLeft + " hour";
+                        }
+                        
+                    }
+                    else
+                    {
+                        if(timeRemainingForEvent.Days > 1)
+                        {
+                            timeLeft = timeRemainingForEvent.Days.ToString();
+                            timeLeft = timeLeft + " days";
+                        }
+                        else
+                        {
+                            timeLeft = timeRemainingForEvent.Days.ToString();
+                            timeLeft = timeLeft + " day";
+                        }
+                        
+                    }
+
+
+                    List<GroupMembers> eventMembers = _context.GroupMembers.Where(x => x.Groups == d.GroupId).ToList();
+
+                    foreach (var e in eventMembers)
+                    {
+                        SendText($"Hey, {e.MemberName}! Just a reminder: You have {timeLeft} until {d.EventName}. Are you still coming? You can still RSVP by texting back with 'yes {d.EventId}' or 'no {d.EventId}'", e.PhoneNumber);
+                    }
+                }
+            }
+            return RedirectToAction("Index");
+
+        }
+
+
+
+
+
+
+
     }
 }
