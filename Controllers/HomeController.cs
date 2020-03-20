@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NotiflyV0._1.Models;
@@ -13,6 +14,7 @@ using NotiflyV0._1.Models;
 
 namespace NotiflyV0._1.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
         private readonly NotiflyDbContext _context;
@@ -26,25 +28,20 @@ namespace NotiflyV0._1.Controllers
         {
             string id = User.FindFirst(ClaimTypes.NameIdentifier).Value;
             List<EventTable> events = _context.EventTable.Where(x => x.UserId == id).ToList();
-            
-            List<EventTable> dueEvents = TimeManager.ListDueEvents(events);
 
-            //if there are any due events, go to send reminders
-            if(dueEvents.Count > 0)
-            {
-                return RedirectToAction("../Sms/SendReminder", dueEvents);
-            }
-            //otherwise return to normal view.
-            else
-            {
-                return View();
+           List<EventTable> dueEvents = TimeManager.ListDueEvents(events);
 
-            }
+           //if there are any due events, go to send reminders
+           if(dueEvents.Count > 0)
+           {
+               return RedirectToAction("../Sms/SendReminder", dueEvents);
+           }
+           //otherwise return to normal view.
+           else
+           {
+               return View();
 
-
-
-
-
+           }
         }
 
         public IActionResult Events()
@@ -172,6 +169,40 @@ namespace NotiflyV0._1.Controllers
             }
 
             return RedirectToAction("Groups");
+        }
+
+        [HttpGet]
+        public IActionResult EditMember(int memberid)
+        {
+            GroupMembers findMember = _context.GroupMembers.Find(memberid);
+            if (findMember != null)
+            {
+                return View(findMember);
+            }
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult EditMember(GroupMembers editMember)
+        {
+            GroupMembers dbGroupMember = _context.GroupMembers.Find(editMember.MemberId);
+
+            if (ModelState.IsValid)
+            {
+                dbGroupMember.MemberName = editMember.MemberName;
+                dbGroupMember.PhoneNumber = editMember.PhoneNumber;
+
+                _context.Entry(dbGroupMember).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                _context.Update(dbGroupMember);
+                _context.SaveChanges();
+            }
+            return RedirectToAction("GroupDetails");
+        }
+
+        public IActionResult GroupDetails(int groupId)
+        {
+            List<GroupMembers> members = _context.GroupMembers.Where(x => x.Groups == groupId).ToList();
+            return View(members);
         }
 
 
