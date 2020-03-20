@@ -29,7 +29,13 @@ namespace NotiflyV0._1.Controllers
 
         public IActionResult Events()
         {
-            return View(_context.EventTable.ToList());
+            string id = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+            List<EventTable> events = _context.EventTable.Where(x => x.UserId == id).ToList();
+
+
+
+            return View(events);
         }
 
         public IActionResult DeleteEvent(int id)
@@ -48,8 +54,8 @@ namespace NotiflyV0._1.Controllers
         //{
         //    return View();
         //}
-        
-        
+
+
         //public IActionResult CreateEvent()
         //{
 
@@ -58,13 +64,13 @@ namespace NotiflyV0._1.Controllers
 
         public IActionResult Groups()
         {
-            
+
             return View(_context.Groups.ToList());
 
 
         }
 
-        [HttpGet] 
+        [HttpGet]
         public IActionResult CreateGroup()
         {
             return View();
@@ -96,8 +102,8 @@ namespace NotiflyV0._1.Controllers
         [HttpGet]
         public IActionResult CreateGroupMember(Groups newGroup)
         {
-            ViewBag.GroupMembers = _context.GroupMembers.Where(x => x.Groups == newGroup.GroupId.ToString()).ToList(); 
-            
+            ViewBag.GroupMembers = _context.GroupMembers.Where(x => x.Groups == newGroup.GroupId.ToString()).ToList();
+
             ViewBag.GroupId = newGroup.GroupId;
 
             ViewBag.Counter = 0;
@@ -107,7 +113,7 @@ namespace NotiflyV0._1.Controllers
         }
 
 
-        
+
         [HttpPost]
         public IActionResult CreateGroupMember(string memberName, string phoneNumber, string groupId, int counter)
         {
@@ -119,7 +125,7 @@ namespace NotiflyV0._1.Controllers
 
             int groupIdNumber = int.Parse(groupId);
             Groups group = _context.Groups.Find(groupIdNumber);
-            
+
             ViewBag.GroupMembers = _context.GroupMembers.Where(x => x.Groups == group.GroupId.ToString()).ToList();
             ViewBag.GroupId = groupIdNumber;
             ViewBag.Counter = counter;
@@ -145,8 +151,8 @@ namespace NotiflyV0._1.Controllers
         }
 
 
-       
-        public IActionResult RemoveGroup(int groupId) 
+
+        public IActionResult RemoveGroup(int groupId)
         {
             Groups foundGroup = _context.Groups.Find(groupId);
 
@@ -164,10 +170,22 @@ namespace NotiflyV0._1.Controllers
             return View();
         }
 
-        public IActionResult CheckRsvp()
+        public IActionResult CheckRsvp(int groupId, int eventId)
         {
-            return View(_context.MemberRsvp.ToList());
+
+            ViewBag.GroupMembers = _context.GroupMembers.Where(x => x.Groups == groupId).ToList();
+            ViewBag.Event = _context.EventTable.Find(eventId);
+
+            List<MemberRsvp> total = _context.MemberRsvp.Where(x => x.EventId == eventId).ToList();
+            ViewBag.NumberOfYes = _context.MemberRsvp.Where(x => x.Rsvp == true).Where(x => x.EventId == eventId).ToList().Count;
+            ViewBag.NumberOfNo = _context.MemberRsvp.Where(x => x.Rsvp == false).Where(x => x.EventId == eventId).ToList().Count;
+
+
+            return View(total);
+
         }
+
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
@@ -175,3 +193,4 @@ namespace NotiflyV0._1.Controllers
         }
     }
 }
+
