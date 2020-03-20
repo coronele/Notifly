@@ -53,6 +53,14 @@ namespace Twillo_Test.Controllers
                 AddRSVPToDataBase(incomingMessage);
 
             }
+
+            else if(incomingMessage.Body == "?" || incomingMessage.Body == "h")
+            {
+                SendText($"This is Notifly's format for creating events. Everything must be on a new line: \n \n Event Name \n Event Date, (ex. 05/29/2015 5:50 AM) \n The Event Venue (ex. 'Red Robin') \n Event Location (ex. 'Trenton', MI or '48183') \n The Group Name",incomingMessage.From);
+                SendText($"Please refer to our documentation page on our app on how to create a group so that you can start making events!", incomingMessage.From);
+
+            }
+
             else
             {
                 AddEventToDatabase(incomingMessage);
@@ -147,14 +155,20 @@ namespace Twillo_Test.Controllers
             List<GroupMembers> groupMembers = _context.GroupMembers.Where(x => x.Groups == group.GroupId).ToList();
             EventTable tempEvent = _context.EventTable.Where(x => x.EventName == userEvent).Where(x => x.GroupId == group.GroupId).First();
             
-
-            foreach (var g in groupMembers)
+            if(user != null)
             {
-                SendText($"Hi, {g.MemberName}! You've just been invited to {userEvent} on {eventDateTime.ToString()}  at {eventVenue}, {eventLoc}. Respond with 'yes {tempEvent.EventId}' if you accept, and 'no {tempEvent.EventId}' if you decline.", g.PhoneNumber);
+                foreach (var g in groupMembers)
+                {
+                    SendText($"Hi, {g.MemberName}! You've just been invited to {userEvent} on {eventDateTime.ToString()}  at {eventVenue}, {eventLoc}. Respond with 'yes {tempEvent.EventId}' if you accept, and 'no {tempEvent.EventId}' if you decline.", g.PhoneNumber);
+                }
             }
+            
 
 
         }
+
+
+
 
         public void SendText(string body, string number)
         {

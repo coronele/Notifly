@@ -29,10 +29,11 @@ namespace NotiflyV0._1.Controllers
 
         public IActionResult Events()
         {
+            string id = User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
+            List<EventTable> events = _context.EventTable.Where(x => x.UserId == id).ToList();
 
-
-            return View(_context.EventTable.ToList());
+            return View(events);
         }
 
         public IActionResult DeleteEvent(int id)
@@ -67,7 +68,7 @@ namespace NotiflyV0._1.Controllers
 
         }
 
-        [HttpGet] //Do i need this part?
+        [HttpGet] 
         public IActionResult CreateGroup()
         {
             return View();
@@ -76,8 +77,7 @@ namespace NotiflyV0._1.Controllers
         [HttpPost]
         public IActionResult CreateGroup(string groupName)
         {
-            //Create a form that will add a new group to the events table
-            //but also would like it to display the list of groups
+           
 
             string id = User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
@@ -175,10 +175,37 @@ namespace NotiflyV0._1.Controllers
             return View();
         }
 
-        public IActionResult CheckRsvp()
+        public IActionResult CheckRsvp(int groupId, int eventId)
         {
-            return View(_context.MemberRsvp.ToList());
+            ViewBag.GroupMembers = _context.GroupMembers.Where(x => x.Groups == groupId).ToList();
+            ViewBag.Event = _context.EventTable.Find(eventId);
+
+            List<MemberRsvp> total = _context.MemberRsvp.Where(x => x.EventId == eventId).ToList();
+            ViewBag.NumberOfYes = _context.MemberRsvp.Where(x => x.Rsvp == true).Where(x => x.EventId == eventId).ToList().Count;
+            ViewBag.NumberOfNo = _context.MemberRsvp.Where(x => x.Rsvp == false).Where(x => x.EventId == eventId).ToList().Count;
+
+
+            return View(total);
+
         }
+
+
+        public int GetRsvpPercentage(int replies, int totalResponses)
+        {
+            if(totalResponses > 0)
+            {
+                return (replies / totalResponses) * 100;
+
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
+
+
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
