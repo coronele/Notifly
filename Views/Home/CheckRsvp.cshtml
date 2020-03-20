@@ -14,11 +14,11 @@
         <th>MemberId</th>
         <th>Rsvp</th>
     </tr>
-    @for (int i = 0; i < Model.Count; i++)
+    @foreach(var m in Model)
     {
         <tr>
-            <td>@ViewBag.GroupMembers[i].MemberName</td>
-            @if (Model[i].Rsvp == true)
+            <td>@m.MemberName</td>
+            @if (m.Rsvp == true)
             {
                 <td>Coming</td>
             }

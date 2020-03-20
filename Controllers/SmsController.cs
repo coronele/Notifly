@@ -183,7 +183,7 @@ namespace Twillo_Test.Controllers
         {
             foreach (var d in dueEvents)
             {
-                if (d.NotificationDate > DateTime.Now)
+                if (d.NotificationDate < DateTime.Now)
                 {
 
                     TimeSpan timeRemainingForEvent = DateTime.Now - d.DateAndTime;
@@ -225,7 +225,23 @@ namespace Twillo_Test.Controllers
                         SendText($"Hey, {e.MemberName}! Just a reminder: You have {timeLeft} until {d.EventName}. Are you still coming? You can still RSVP by texting back with 'yes {d.EventId}' or 'no {d.EventId}'", e.PhoneNumber);
                     }
                 }
+
+                EventTable foundEvent = _context.EventTable.Find(d.EventId);
+                
+                
+                if(foundEvent != null)
+                {
+                    foundEvent.NotificationDate = DateTime.MinValue;
+
+                    _context.Entry(foundEvent).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                    _context.EventTable.Update(foundEvent);
+                    _context.SaveChanges();
+                }
+
+
+
             }
+
             return RedirectToAction("Index");
 
         }

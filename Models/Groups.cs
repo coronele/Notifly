@@ -21,8 +21,6 @@ namespace NotiflyV0._1.Models
         public int GroupId { get; set; }
         public string GroupName { get; set; }
         public string UserId { get; set; }
-        
-
         public virtual AspNetUsers User { get; set; }
         public virtual ICollection<EventTable> EventTable { get; set; }
     }

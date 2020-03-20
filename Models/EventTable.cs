@@ -12,6 +12,7 @@ namespace NotiflyV0._1.Models
 
         public EventTable(string eventName, string description, int groupId, DateTime dateAndTime, string venue, string venueLocation, string userId, string groupName, DateTime notificationDate)
         {
+            
             EventName = eventName;
             EventDescription = description;
             GroupId = groupId;
