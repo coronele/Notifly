@@ -65,10 +65,25 @@ namespace Twillo_Test.Controllers
                 {
                     SendListOfEvents(incomingMessage);
                 }
-                else if (messageParts[0] == "r" || messageParts[0] == "remind")
+                else if (messageParts[0].ToLower() == "r" || messageParts[0].ToLower() == "remind")
                 {
                     SendReminder(incomingMessage, messageParts[1]);
                 }
+                else if(messageParts[0] == "create" || messageParts[0] == "new")
+                {
+                    CreateGroup(incomingMessage);
+                }
+                //else if(messageParts[0] == "delete")
+                //{
+                //    if(messageParts[1] == "event")
+                //    {
+                //        DeleteEvent();
+                //    }
+                //    else if(messageParts[1] == "group")
+                //    {
+                //        DeleteGroup();
+                //    }
+                //}
                 else
                 {
                     AddEventToDatabase(incomingMessage);
@@ -138,11 +153,18 @@ namespace Twillo_Test.Controllers
             bool badDate = false;
             bool unknownGroup = false;
             bool badFormat = false;
+            bool badNumber = false;
 
             try
             {
                 string userPhoneNumber = incomingMessage.From;
                 var user = _context.AspNetUsers.Where(x => x.PhoneNumber == userPhoneNumber).First();
+                if (user == null)
+                {
+                    Exception unknownUser = new Exception();
+                    badNumber = true;
+                    throw unknownUser;
+                }
 
                 StringReader reader = new StringReader(incomingMessage.Body);
                 string line = reader.ReadLine();
@@ -193,6 +215,7 @@ namespace Twillo_Test.Controllers
                     badFormat = true;
                     throw formatError;
                 }
+                
 
 
 
@@ -231,6 +254,14 @@ namespace Twillo_Test.Controllers
                 else if (unknownGroup)
                 {
                     SendErrorText(incomingMessage, "That group doesn't exist.");
+                }
+                else if (badNumber)
+                {
+                    SendText("Looks like you don't have an account with us. \nIn order to create events or groups, please sign up at www.notifly.azurewebsites.net \n Have a nice day!", incomingMessage.From);
+                }
+                else
+                {
+                    SendErrorText(incomingMessage, null);
                 }
 
             }
@@ -352,6 +383,71 @@ namespace Twillo_Test.Controllers
             }
 
         }
+
+        public void CreateGroup(SmsRequest incomingMessage)
+        {
+            bool badNumber = false;
+
+            try
+            {
+                
+                var user = _context.AspNetUsers.Where(x => x.PhoneNumber == incomingMessage.From).First();
+                if(user == null)
+                {
+                    Exception unknownUser = new Exception();
+                    badNumber = true;
+                    throw unknownUser;
+                }
+
+                StringReader reader = new StringReader(incomingMessage.Body);
+                string line = reader.ReadLine();
+                List<string> textParts = new List<string>();
+
+                while (line != null)
+                {
+                    textParts.Add(line);
+                    line = reader.ReadLine();
+                }
+
+                List<string> memberNames = new List<string>();
+                List<string> memberNumbers = new List<string>();
+                for (int i = 2; i < textParts.Count; i++)
+                {
+                    if(i % 2 == 0)
+                    {
+                        memberNames.Add(textParts[i]);
+                    }
+                    else
+                    {
+                        memberNumbers.Add(textParts[i]);
+                    }
+                }
+
+                Groups newGroup = new Groups(textParts[1], user.Id);
+                _context.Groups.Add(newGroup);
+                _context.SaveChanges();
+
+                for (int i = 0; i < memberNames.Count; i++)
+                {
+                    GroupMembers newMember = new GroupMembers(memberNames[i], newGroup.GroupId, memberNumbers[i]);
+                    _context.GroupMembers.Add(newMember);
+                    _context.SaveChanges();
+                }
+
+            }
+            catch (Exception)
+            {
+                if (badNumber)
+                {
+                    SendText("Looks like you don't have an account with us. \nIn order to create events or groups, please sign up at www.notifly.azurewebsites.net \n Have a nice day!", incomingMessage.From);
+                }
+                
+            }
+        }
+
+
+
+
 
 
         public void SendListOfEvents(SmsRequest incomingMessage)

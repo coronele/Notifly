@@ -81,8 +81,10 @@ namespace NotiflyV0._1.Controllers
 
         public IActionResult Groups()
         {
+            string id = User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
-            return View(_context.Groups.ToList());
+            List<Groups> groups = _context.Groups.Where(x => x.UserId == id).ToList();
+            return View(groups);
 
 
         }
