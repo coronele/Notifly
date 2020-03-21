@@ -45,32 +45,47 @@ namespace Twillo_Test.Controllers
         [HttpPost]
         public TwiMLResult ReceiveText(SmsRequest incomingMessage)
         {
-
-            string[] messageParts = incomingMessage.Body.Split(" ");
-            if (messageParts[0].ToLower() == "yes" || messageParts[0].ToLower() == "no" || messageParts[0].ToLower() == "n" || messageParts[0].ToLower() == "y")
+            try
             {
+                string[] messageParts = incomingMessage.Body.Split(" ");
+                if (messageParts[0].ToLower() == "yes" || messageParts[0].ToLower() == "no" || messageParts[0].ToLower() == "n" || messageParts[0].ToLower() == "y")
+                {
 
-                AddRSVPToDataBase(incomingMessage);
+                    AddRSVPToDataBase(incomingMessage);
 
+                }
+
+                else if (messageParts[0] == "?" || messageParts[0].ToLower() == "h")
+                {
+                    SendText($"This is Notifly's format for creating events. Everything must be on a new line: \nEvent Name \nEvent Date, (ex. 05/29/2015 5:50 AM) \nThe Event Venue (ex. 'Red Robin') \nEvent Location (ex. 'Trenton', MI or '48183') \nThe Group Name \nBefore you create an event, you'll need to create a group. Visit notifly.azurewebsites.net to learn more.", incomingMessage.From);
+                    SendText($"", incomingMessage.From);
+
+                }
+                else if (incomingMessage.Body.ToLower() == "events" || incomingMessage.Body.ToLower() == "event" || incomingMessage.Body.ToLower() == "e")
+                {
+                    SendListOfEvents(incomingMessage);
+                }
+                else if (messageParts[0] == "r" || messageParts[0] == "remind")
+                {
+                    SendReminder(incomingMessage, messageParts[1]);
+                }
+                else
+                {
+                    AddEventToDatabase(incomingMessage);
+                }
+
+                //isn't doing anything
+                var messagingResponse = new MessagingResponse();
+
+                return TwiML(messagingResponse);
+            }
+            catch (Exception)
+            {
+                SendErrorText(incomingMessage, null);
+                var messagingResponse = new MessagingResponse();
+                return TwiML(messagingResponse);
             }
 
-            else if (incomingMessage.Body == "?" || incomingMessage.Body == "h")
-            {
-                SendText($"This is Notifly's format for creating events. Everything must be on a new line: \n \n Event Name \n Event Date, (ex. 05/29/2015 5:50 AM) \n The Event Venue (ex. 'Red Robin') \n Event Location (ex. 'Trenton', MI or '48183') \n The Group Name", incomingMessage.From);
-                SendText($"Please refer to our documentation page on our app on how to create a group so that you can start making events!", incomingMessage.From);
-
-            }
-
-            else
-            {
-                AddEventToDatabase(incomingMessage);
-
-            }
-
-            //isn't doing anything
-            var messagingResponse = new MessagingResponse();
-
-            return TwiML(messagingResponse);
 
         }
 
@@ -118,50 +133,108 @@ namespace Twillo_Test.Controllers
         }
 
 
-        public void AddEventToDatabase(SmsRequest message)
+        public void AddEventToDatabase(SmsRequest incomingMessage)
         {
-            string userPhoneNumber = message.From;
-            var user = _context.AspNetUsers.Where(x => x.PhoneNumber == userPhoneNumber).First();
+            bool badDate = false;
+            bool unknownGroup = false;
+            bool badFormat = false;
 
-            StringReader reader = new StringReader(message.Body);
-            string line = reader.ReadLine();
-            List<string> textparts = new List<string>();
-
-            while (line != null)
+            try
             {
-                textparts.Add(line);
-                line = reader.ReadLine();
-            }
+                string userPhoneNumber = incomingMessage.From;
+                var user = _context.AspNetUsers.Where(x => x.PhoneNumber == userPhoneNumber).First();
 
-            string userEvent = textparts[0];
+                StringReader reader = new StringReader(incomingMessage.Body);
+                string line = reader.ReadLine();
+                List<string> textParts = new List<string>();
 
-            //Date Time Format: ("MM/dd/yyyy h:mm tt") (05/29/2015 5:50 AM)
-
-
-            DateTime eventDateTime = DateTime.Parse(textparts[1]);
-            string eventVenue = textparts[2];
-            string eventLoc = textparts[3];
-            string groupName = textparts[4];
-
-            Groups group = _context.Groups.Where(x => x.GroupName == groupName).First();
-
-            EventTable newEvent = new EventTable(userEvent, "Description", group.GroupId, eventDateTime, eventVenue, eventLoc, user.Id, group.GroupName, eventDateTime);
-
-            _context.EventTable.Add(newEvent);
-            _context.SaveChanges();
-
-            //Code for sending group text
-
-            List<GroupMembers> groupMembers = _context.GroupMembers.Where(x => x.Groups == group.GroupId).ToList();
-            EventTable tempEvent = _context.EventTable.Where(x => x.EventName == userEvent).Where(x => x.GroupId == group.GroupId).First();
-
-            if (user != null)
-            {
-                foreach (var g in groupMembers)
+                while (line != null)
                 {
-                    SendText($"Hi, {g.MemberName}! You've just been invited to {userEvent} on {eventDateTime.ToString()}  at {eventVenue}, {eventLoc}. Respond with 'yes {tempEvent.EventId}' if you accept, and 'no {tempEvent.EventId}' if you decline.", g.PhoneNumber);
+                    textParts.Add(line);
+                    line = reader.ReadLine();
+                }
+
+                string userEvent = textParts[0];
+
+                //Date Time Format: ("MM/dd/yyyy h:mm tt") (05/29/2015 5:50 AM)
+
+
+                DateTime eventDateTime = DateTime.Parse(textParts[1]);
+                string eventVenue = textParts[2];
+                string eventLoc = textParts[3];
+                string groupName = textParts[4];
+
+                //list of user's groups
+                List<Groups> userGroups = _context.Groups.Where(x => x.UserId == user.Id).ToList();
+
+                //list of group names
+                List<string> groupNames = new List<string>();
+                foreach (var u in userGroups)
+                {
+                    groupNames.Add(u.GroupName);
+                }
+
+                //exception handling!
+                if (DateTime.Now.Subtract(eventDateTime).TotalSeconds > 0)
+                {
+                    Exception dateError = new Exception();
+                    badDate = true;
+                    throw dateError;
+                }
+                else if (!groupNames.Contains(groupName))
+                {
+                    Exception nullGroup = new Exception();
+                    unknownGroup = true;
+                    throw nullGroup;
+                }
+                else if (textParts.Count != 5)
+                {
+                    Exception formatError = new Exception();
+                    badFormat = true;
+                    throw formatError;
+                }
+
+
+
+                Groups group = _context.Groups.Where(x => x.GroupName == groupName).First();
+
+
+
+                EventTable newEvent = new EventTable(userEvent, "Description", group.GroupId, eventDateTime, eventVenue, eventLoc, user.Id, group.GroupName, eventDateTime);
+
+                _context.EventTable.Add(newEvent);
+                _context.SaveChanges();
+
+                //Code for sending group text
+
+                List<GroupMembers> groupMembers = _context.GroupMembers.Where(x => x.Groups == group.GroupId).ToList();
+                EventTable tempEvent = _context.EventTable.Where(x => x.EventName == userEvent).Where(x => x.GroupId == group.GroupId).First();
+
+                if (user != null)
+                {
+                    foreach (var g in groupMembers)
+                    {
+                        SendText($"Hi, {g.MemberName}! You've just been invited to {userEvent} on {eventDateTime.ToString()}  at {eventVenue}, {eventLoc}. Respond with 'yes {tempEvent.EventId}' if you accept, and 'no {tempEvent.EventId}' if you decline.", g.PhoneNumber);
+                    }
                 }
             }
+            catch (Exception)
+            {
+                if (badDate)
+                {
+                    SendErrorText(incomingMessage, "The date you entered is too early.");
+                }
+                else if (badFormat)
+                {
+                    SendErrorText(incomingMessage, "The format you entered is incorrect.");
+                }
+                else if (unknownGroup)
+                {
+                    SendErrorText(incomingMessage, "That group doesn't exist.");
+                }
+
+            }
+
         }
 
 
@@ -179,72 +252,146 @@ namespace Twillo_Test.Controllers
 
         }
 
-        public IActionResult SendReminder(List<EventTable> dueEvents)
+        public void SendReminder(SmsRequest incomingMessage, string userNumberString)
         {
-            foreach (var d in dueEvents)
-            {
-                if (d.NotificationDate < DateTime.Now)
-                {
+            bool badNumber = false;
+            bool outOfRange = false;
 
-                    TimeSpan timeRemainingForEvent = DateTime.Now - d.DateAndTime;
-                    string timeLeft;
-                    if (timeRemainingForEvent.TotalDays < 1)
+
+            try
+            {
+                //check if number entered is in fact a number.
+                if (!int.TryParse(userNumberString, out int userNumber))
+                {
+                    Exception badParse = new Exception();
+                    badNumber = true;
+                    throw badParse;
+                }
+
+
+
+                var user = _context.AspNetUsers.Where(x => x.PhoneNumber == incomingMessage.From).First();
+
+                List<EventTable> userEvents = _context.EventTable.Where(x => x.UserId == user.Id).ToList();
+
+                //check if the number sent is too high or too low, since it might be out of range.
+                if (userNumber > userEvents.Count || userNumber < 1)
+                {
+                    outOfRange = true;
+                    Exception badRange = new Exception();
+                    throw badRange;
+
+                }
+
+                int foundIndex = 0;
+
+                for (int i = 0; i < userEvents.Count; i++)
+                {
+                    if (i + 1 == userNumber)
                     {
-                        if(timeRemainingForEvent.Hours > 1)
-                        {
-                            timeLeft = timeRemainingForEvent.Hours.ToString();
-                            timeLeft = timeLeft + " hours";
-                        }
-                        else
-                        {
-                            timeLeft = timeRemainingForEvent.Hours.ToString();
-                            timeLeft = timeLeft + " hour";
-                        }
-                        
+                        foundIndex = i;
+                    }
+                }
+
+                EventTable userEvent = userEvents[foundIndex];
+
+
+                TimeSpan timeRemainingForEvent = userEvent.DateAndTime.Subtract(DateTime.Now);
+                string timeLeft;
+                if (timeRemainingForEvent.TotalDays < 1)
+                {
+                    if (timeRemainingForEvent.Hours > 1)
+                    {
+                        timeLeft = timeRemainingForEvent.Hours.ToString();
+                        timeLeft = timeLeft + " hours";
                     }
                     else
                     {
-                        if(timeRemainingForEvent.Days > 1)
-                        {
-                            timeLeft = timeRemainingForEvent.Days.ToString();
-                            timeLeft = timeLeft + " days";
-                        }
-                        else
-                        {
-                            timeLeft = timeRemainingForEvent.Days.ToString();
-                            timeLeft = timeLeft + " day";
-                        }
-                        
+                        timeLeft = timeRemainingForEvent.Hours.ToString();
+                        timeLeft = timeLeft + " hour";
                     }
 
-
-                    List<GroupMembers> eventMembers = _context.GroupMembers.Where(x => x.Groups == d.GroupId).ToList();
-
-                    foreach (var e in eventMembers)
-                    {
-                        SendText($"Hey, {e.MemberName}! Just a reminder: You have {timeLeft} until {d.EventName}. Are you still coming? You can still RSVP by texting back with 'yes {d.EventId}' or 'no {d.EventId}'", e.PhoneNumber);
-                    }
                 }
-
-                EventTable foundEvent = _context.EventTable.Find(d.EventId);
-                
-                
-                if(foundEvent != null)
+                else
                 {
-                    foundEvent.NotificationDate = DateTime.MinValue;
+                    if (timeRemainingForEvent.Days > 1)
+                    {
+                        timeLeft = timeRemainingForEvent.Days.ToString();
+                        timeLeft = timeLeft + " days";
+                    }
+                    else
+                    {
+                        timeLeft = timeRemainingForEvent.Days.ToString();
+                        timeLeft = timeLeft + " day";
+                    }
 
-                    _context.Entry(foundEvent).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-                    _context.EventTable.Update(foundEvent);
-                    _context.SaveChanges();
                 }
 
+
+                List<GroupMembers> eventMembers = _context.GroupMembers.Where(x => x.Groups == userEvent.GroupId).ToList();
+
+                foreach (var e in eventMembers)
+                {
+                    SendText($"Hey, {e.MemberName}! Just a reminder: You have {timeLeft} until {userEvent.EventName}. Are you still coming? You can still RSVP by texting back with 'yes {userEvent.EventId}' or 'no {userEvent.EventId}'", e.PhoneNumber);
+                }
+            }
+            catch (Exception)
+            {
+                if (badNumber)
+                {
+                    SendErrorText(incomingMessage, "That's not a valid event number.");
+                    SendListOfEvents(incomingMessage);
+                }
+                else if (outOfRange)
+                {
+                    SendErrorText(incomingMessage, "That event doesn't exist.");
+                    SendListOfEvents(incomingMessage);
+                }
 
 
             }
 
-            return RedirectToAction("Index");
+        }
+
+
+        public void SendListOfEvents(SmsRequest incomingMessage)
+        {
+            var user = _context.AspNetUsers.Where(x => x.PhoneNumber == incomingMessage.From).First();
+            List<EventTable> userEvents = _context.EventTable.Where(x => x.UserId == user.Id).ToList();
+            string reminderBody = "Hi! These are your events. Would you like to send out reminders? If so, reply to this text with the letter r and the number of the event (ex. 'r 12'). \n";
+
+
+
+            for (int i = 0; i < userEvents.Count; i++)
+            {
+                reminderBody = reminderBody + $"{i + 1}. {userEvents[i].EventName} {userEvents[i].GroupName} {userEvents[i].DateAndTime.ToShortDateString()}\n";
+            }
+
+            SendText(reminderBody, incomingMessage.From);
 
         }
+
+        public void SendErrorText(SmsRequest incomingMessage, string issue)
+        {
+            if (issue == null)
+            {
+                SendText("Oh no! :( \nThat didn't work, but no worries! Try again! \nIf you need help, text back 'h' or '?'", incomingMessage.From);
+            }
+            else
+            {
+                SendText($"Oh no! :( \n{issue} Try again! \nIf you need help, text back 'h' or '?'", incomingMessage.From);
+
+            }
+        }
+
+
+
+
+
+
+
+
+
 
 
 
