@@ -241,6 +241,12 @@ namespace NotiflyV0._1.Controllers
         }
 
 
+        public IActionResult Tutorial()
+        {
+            return View();
+        }
+
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
