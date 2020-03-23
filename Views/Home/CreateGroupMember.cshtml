@@ -1,5 +1,5 @@
 ﻿
-
+@Html.ValidationSummary();
 @{
 
     int counter1 = ViewBag.Counter;
@@ -22,8 +22,8 @@
 <br />
 <br />
 <form action="../Home/CreateGroupMember" method="post">
-    <input type="text" name="memberName" value="" placeholder="Member Name " />
-    <input type="text" name="phoneNumber" value="" placeholder="+11234561790" />
+    <input type="text" name="memberName" value="" placeholder="Member Name " required/>
+    <input type="text" name="phoneNumber" value="" placeholder="+11234561790" required/>
     <input type="hidden" name="groupId" value="@ViewBag.GroupId" />
     <input type="hidden" name="counter" value="@counter" />
     <br />

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace NotiflyV0._1.Models
 {
@@ -15,6 +16,8 @@ namespace NotiflyV0._1.Models
 
 
         public int MemberId { get; set; }
+
+        [StringLength(30, MinimumLength = 3, ErrorMessage = "Must be between 3-40 characters")]
         public string MemberName { get; set; }
         public int EventId { get; set; }
         public bool Rsvp { get; set; }
