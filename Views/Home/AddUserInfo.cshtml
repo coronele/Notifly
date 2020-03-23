@@ -1,0 +1,39 @@
+﻿
+
+@{
+    ViewData["Title"] = "AddUserInfo";
+}
+
+<h1>You're almost there!</h1>
+<br />
+<h3>Just one more step and then you can start Notiflying!</h3>
+<br />
+
+<form action="../Home/AddUserInfo" method="post">
+    <div class="form-group">
+        <label for="formGroupExampleInput">First Name</label>
+        <input type="text" class="form-control" id="formGroupExampleInput" placeholder="John" name="firstName" required>
+    </div>
+    <div class="form-group">
+        <label for="formGroupExampleInput2">Last Name</label>
+        <input type="text" class="form-control" id="formGroupExampleInput2" placeholder="Smith" name="LastName" required>
+    </div>
+    <div class="form-group">
+        <label for="formGroupExampleInput2">Phone Number</label>
+        <input type="text" class="form-control" id="formGroupExampleInput2" placeholder="+1313###3434" name="phoneNumber" pattern="(\+1\d{10})" required>
+    </div>
+    <br />
+    <br />
+    <input class="btn btn-lg btn-success text-capitalize" type="submit" value="Start Making Events!" />
+</form>
+
+
+
+
+
+
+
+
+
+
+

@@ -4,10 +4,10 @@
     
 }
 
-<h1>Events</h1>
-
-<table class="table table-bordered table-striped">
-    <tr>
+<h1 class="text-light">Events</h1>
+<br />
+<table class="table table-responsive table-striped">
+    <tr class="bg-secondary text-light">
         <th>Name</th>
         <th>Description</th>
         <th>Group Name</th>
@@ -18,7 +18,7 @@
     </tr>
     @foreach (var m in Model)
     {
-        <tr>
+        <tr class="bg-light text-dark">
             <td>@m.EventName</td>
             <td>@m.EventDescription</td>
             <td>@m.GroupName</td>
@@ -30,5 +30,10 @@
     }
 
 </table>
+
+
+
+
+
 
 

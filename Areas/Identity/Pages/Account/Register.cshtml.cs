@@ -61,16 +61,6 @@ namespace NotiflyV0._1.Areas.Identity.Pages.Account
             [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
             public string ConfirmPassword { get; set; }
 
-            [Required]
-            [Phone]
-            [Display(Name = "Phone Number")]
-            public string PhoneNumber { get; set; }
-
-            [Required]
-            [Phone]
-            [Display(Name = "Confirm Phone Number")]
-            [Compare("PhoneNumber", ErrorMessage="The phone numbers do not match.")]
-            public string ConfirmPhoneNumber { get; set; }
 
         }
 
@@ -86,7 +76,7 @@ namespace NotiflyV0._1.Areas.Identity.Pages.Account
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             if (ModelState.IsValid)
             {
-                var user = new IdentityUser { UserName = Input.Email, Email = Input.Email, PhoneNumber = Input.PhoneNumber};
+                var user = new IdentityUser { UserName = Input.Email, Email = Input.Email};
                 var result = await _userManager.CreateAsync(user, Input.Password);
                 if (result.Succeeded)
                 {

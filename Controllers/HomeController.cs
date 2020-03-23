@@ -1,13 +1,10 @@
-using System;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using NotiflyV0._1.Models;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using NotiflyV0._1.Models;
 
 
 
@@ -26,33 +23,73 @@ namespace NotiflyV0._1.Controllers
 
         public IActionResult Index()
         {
-           // string id = User.FindFirst(ClaimTypes.NameIdentifier).Value;
-           // List<EventTable> events = _context.EventTable.Where(x => x.UserId == id).ToList();
 
-           //List<EventTable> dueEvents = TimeManager.ListDueEvents(events);
+            string id = User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
-           ////if there are any due events, go to send reminders
-           //if(dueEvents.Count > 0)
-           //{
-           //    return RedirectToAction("../Sms/SendReminder", dueEvents);
-           //}
-           ////otherwise return to normal view.
-           //else
-           //{
-               return View();
+            try
+            {
+                UserInfo userInfo = _context.UserInfo.Where(x => x.UserId == id).First();
+                if(userInfo == null)
+                {
+                    throw new System.Exception();
+                }
+                else
+                {
+                    return View();
+                }
 
-           //}
+            }
+            catch (System.Exception)
+            {
+
+                return RedirectToAction("AddUserInfo");
+            }
+
         }
+
+        [HttpGet]
+        public IActionResult AddUserInfo()
+        {
+
+            return View();
+        }
+        [HttpPost]
+        public IActionResult AddUserInfo(string firstName, string lastName, string phoneNumber)
+        {
+            string id = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            UserInfo userInfo = new UserInfo(firstName, lastName, id, phoneNumber);
+            _context.UserInfo.Add(userInfo);
+            _context.SaveChanges();
+            return RedirectToAction("Index");
+        }
+
+
 
         public IActionResult Events()
         {
-            string id = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            try
+            {
+                string id = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+                UserInfo userInfo = _context.UserInfo.Where(x => x.UserId == id).First();
+                if (userInfo == null)
+                {
+                    throw new System.Exception();
+                }
+                else
+                {
+                    List<EventTable> events = _context.EventTable.Where(x => x.UserId == id).ToList();
+                    return View(events);
+                }
 
-            List<EventTable> events = _context.EventTable.Where(x => x.UserId == id).ToList();
+            }
+            catch (System.Exception)
+            {
+
+                return RedirectToAction("AddUserInfo");
+            }
 
 
-
-            return View(events);
+            
         }
 
         public IActionResult DeleteEvent(int id)
@@ -81,11 +118,28 @@ namespace NotiflyV0._1.Controllers
 
         public IActionResult Groups()
         {
-            string id = User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
-            List<Groups> groups = _context.Groups.Where(x => x.UserId == id).ToList();
-            return View(groups);
+            try
+            {
+                string id = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+                UserInfo userInfo = _context.UserInfo.Where(x => x.UserId == id).First();
+                if (userInfo == null)
+                {
+                    throw new System.Exception();
+                }
+                else
+                {
+                    List<Groups> groups = _context.Groups.Where(x => x.UserId == id).ToList();
 
+                    return View(groups);
+                }
+
+            }
+            catch (System.Exception)
+            {
+
+                return RedirectToAction("AddUserInfo");
+            }
 
         }
 
@@ -144,7 +198,7 @@ namespace NotiflyV0._1.Controllers
             _context.GroupMembers.Add(newMember);
             _context.SaveChanges();
 
-            
+
             Groups group = _context.Groups.Find(groupId);
 
             ViewBag.GroupMembers = _context.GroupMembers.Where(x => x.Groups == group.GroupId).ToList();
@@ -212,6 +266,18 @@ namespace NotiflyV0._1.Controllers
         public IActionResult RemoveGroup(int groupId)
         {
             Groups foundGroup = _context.Groups.Find(groupId);
+
+            List<EventTable> events = _context.EventTable.Where(x => x.GroupId == groupId).ToList();
+
+            if (events.Count > 0)
+            {
+                foreach (var e in events)
+                {
+                    _context.EventTable.Remove(e);
+                    _context.SaveChanges();
+                }
+            }
+
 
             if (foundGroup != null)
             {

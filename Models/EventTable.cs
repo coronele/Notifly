@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 
 namespace NotiflyV0._1.Models
 {
@@ -13,7 +12,7 @@ namespace NotiflyV0._1.Models
 
         public EventTable(string eventName, string description, int groupId, DateTime dateAndTime, string venue, string venueLocation, string userId, string groupName, DateTime notificationDate)
         {
-            
+
             EventName = eventName;
             EventDescription = description;
             GroupId = groupId;
@@ -23,7 +22,7 @@ namespace NotiflyV0._1.Models
             UserId = userId;
             GroupName = groupName;
             NotificationDate = notificationDate;
-            
+
         }
 
         public int EventId { get; set; }

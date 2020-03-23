@@ -45,61 +45,63 @@ namespace Twillo_Test.Controllers
         [HttpPost]
         public TwiMLResult ReceiveText(SmsRequest incomingMessage)
         {
-            try
+
+            string[] messageParts = incomingMessage.Body.Split(" ");
+            if (messageParts[0].ToLower() == "yes" || messageParts[0].ToLower() == "no" || messageParts[0].ToLower() == "n" || messageParts[0].ToLower() == "y")
             {
-                string[] messageParts = incomingMessage.Body.Split(" ");
-                if (messageParts[0].ToLower() == "yes" || messageParts[0].ToLower() == "no" || messageParts[0].ToLower() == "n" || messageParts[0].ToLower() == "y")
-                {
 
-                    AddRSVPToDataBase(incomingMessage);
+                AddRSVPToDataBase(incomingMessage);
 
-                }
+            }
 
-                else if (messageParts[0] == "?" || messageParts[0].ToLower() == "h")
+            else if (messageParts[0] == "?" || messageParts[0].ToLower() == "h" || messageParts[0].ToLower() == "help")
+            {
+                if (messageParts.Length == 1)
                 {
-                    SendText($"This is Notifly's format for creating events. Everything must be on a new line: \nEvent Name \nEvent Date, (ex. 05/29/2015 5:50 AM) \nThe Event Venue (ex. 'Red Robin') \nEvent Location (ex. 'Trenton', MI or '48183') \nThe Group Name \nBefore you create an event, you'll need to create a group. Visit notifly.azurewebsites.net to learn more.", incomingMessage.From);
-                    SendText($"", incomingMessage.From);
-
+                    SendHelpText(incomingMessage, "0");
                 }
-                else if (incomingMessage.Body.ToLower() == "events" || incomingMessage.Body.ToLower() == "event" || incomingMessage.Body.ToLower() == "e")
-                {
-                    SendListOfEvents(incomingMessage);
-                }
-                else if (messageParts[0].ToLower() == "r" || messageParts[0].ToLower() == "remind")
-                {
-                    SendReminder(incomingMessage, messageParts[1]);
-                }
-                else if(messageParts[0] == "create" || messageParts[0] == "new")
-                {
-                    CreateGroup(incomingMessage);
-                }
-                //else if(messageParts[0] == "delete")
-                //{
-                //    if(messageParts[1] == "event")
-                //    {
-                //        DeleteEvent();
-                //    }
-                //    else if(messageParts[1] == "group")
-                //    {
-                //        DeleteGroup();
-                //    }
-                //}
                 else
                 {
-                    AddEventToDatabase(incomingMessage);
+                    SendHelpText(incomingMessage, messageParts[1]);
                 }
 
-                //isn't doing anything
-                var messagingResponse = new MessagingResponse();
 
-                return TwiML(messagingResponse);
+
             }
-            catch (Exception)
+            else if (incomingMessage.Body.ToLower() == "events" || incomingMessage.Body.ToLower() == "event" || incomingMessage.Body.ToLower() == "e")
             {
-                SendErrorText(incomingMessage, null);
-                var messagingResponse = new MessagingResponse();
-                return TwiML(messagingResponse);
+                SendListOfEvents(incomingMessage);
             }
+            else if (messageParts[0].ToLower() == "r" || messageParts[0].ToLower() == "remind")
+            {
+                SendReminder(incomingMessage, messageParts[1]);
+            }
+            else if (messageParts[0] == "create" || messageParts[0] == "new")
+            {
+                CreateGroup(incomingMessage);
+            }
+            //else if(messageParts[0] == "delete")
+            //{
+            //    if(messageParts[1] == "event")
+            //    {
+            //        DeleteEvent();
+            //    }
+            //    else if(messageParts[1] == "group")
+            //    {
+            //        DeleteGroup();
+            //    }
+            //}
+            else
+            {
+                AddEventToDatabase(incomingMessage);
+            }
+
+            //isn't doing anything
+            var messagingResponse = new MessagingResponse();
+
+            return TwiML(messagingResponse);
+
+
 
 
         }
@@ -107,43 +109,62 @@ namespace Twillo_Test.Controllers
 
         public void AddRSVPToDataBase(SmsRequest incomingMessage)
         {
-
-            string[] textParts = incomingMessage.Body.Split(" ");
-
-            bool userRsvp = false;
-
-            var foundGroupMember = _context.GroupMembers.Where(x => x.PhoneNumber == incomingMessage.From).First();
-
-            int memberId = foundGroupMember.MemberId;
-
-            var foundevent = _context.EventTable.Where(y => y.EventId == Int32.Parse(textParts[1])).First();
-
-            int eventId = foundevent.EventId;
-
-            string rsvpResponse = textParts[0].ToLower();
-
-            if (rsvpResponse.Contains("yes") || rsvpResponse == "y")
+            bool notANumber = false;
+            try
             {
-                userRsvp = true;
-            }
+                string[] textParts = incomingMessage.Body.Split(" ");
 
-            //find if rsvp already exists in database
-            List<MemberRsvp> rsvpDupes = _context.MemberRsvp.Where(x => x.MemberId == memberId).Where(x => x.EventId == eventId).ToList();
+                bool userRsvp = false;
 
-            //delete all found duplicates (should only be one).  
-            if (rsvpDupes.Count > 0)
-            {
-                foreach (var r in rsvpDupes)
+                var foundGroupMember = _context.GroupMembers.Where(x => x.PhoneNumber == incomingMessage.From).First();
+
+                int memberId = foundGroupMember.MemberId;
+
+                var foundEvent = _context.EventTable.Where(y => y.EventId == Int32.Parse(textParts[1])).First();
+                if (foundEvent == null)
                 {
-                    _context.MemberRsvp.Remove(r);
-                    _context.SaveChanges();
+                    notANumber = true;
+                    throw new Exception();
+                }
+                int eventId = foundEvent.EventId;
+
+                string rsvpResponse = textParts[0].ToLower();
+
+                if (rsvpResponse.Contains("yes") || rsvpResponse == "y")
+                {
+                    userRsvp = true;
+                }
+
+                //find if rsvp already exists in database
+                List<MemberRsvp> rsvpDupes = _context.MemberRsvp.Where(x => x.MemberId == memberId).Where(x => x.EventId == eventId).ToList();
+
+                //delete all found duplicates (should only be one).  
+                if (rsvpDupes.Count > 0)
+                {
+                    foreach (var r in rsvpDupes)
+                    {
+                        _context.MemberRsvp.Remove(r);
+                        _context.SaveChanges();
+                    }
+                }
+
+                MemberRsvp newRsvp = new MemberRsvp(memberId, eventId, userRsvp, foundGroupMember.MemberName);
+
+                _context.MemberRsvp.Add(newRsvp);
+                _context.SaveChanges();
+            }
+            catch (Exception)
+            {
+                if (notANumber)
+                {
+                    SendText("That event number you entered wasn't valid. Could you try that again, please?", incomingMessage.From);
+                }
+                else
+                {
+                    SendErrorText(incomingMessage, null);
                 }
             }
 
-            MemberRsvp newRsvp = new MemberRsvp(memberId, eventId, userRsvp, foundGroupMember.MemberName);
-
-            _context.MemberRsvp.Add(newRsvp);
-            _context.SaveChanges();
 
         }
 
@@ -153,18 +174,21 @@ namespace Twillo_Test.Controllers
             bool badDate = false;
             bool unknownGroup = false;
             bool badFormat = false;
-            bool badNumber = false;
+            bool unknownUser = false;
 
             try
             {
-                string userPhoneNumber = incomingMessage.From;
-                var user = _context.AspNetUsers.Where(x => x.PhoneNumber == userPhoneNumber).First();
-                if (user == null)
+                UserInfo userInfo = _context.UserInfo.Where(x => x.PhoneNumber == incomingMessage.From).First();
+                if (userInfo == null)
                 {
-                    Exception unknownUser = new Exception();
-                    badNumber = true;
-                    throw unknownUser;
+                    unknownUser = true;
+                    throw new Exception();
                 }
+
+                AspNetUsers user = _context.AspNetUsers.Where(x => x.Id == userInfo.UserId).First();
+
+
+
 
                 StringReader reader = new StringReader(incomingMessage.Body);
                 string line = reader.ReadLine();
@@ -199,24 +223,23 @@ namespace Twillo_Test.Controllers
                 //exception handling!
                 if (DateTime.Now.Subtract(eventDateTime).TotalSeconds > 0)
                 {
-                    Exception dateError = new Exception();
+
                     badDate = true;
-                    throw dateError;
+                    throw new Exception();
+
                 }
                 else if (!groupNames.Contains(groupName))
                 {
-                    Exception nullGroup = new Exception();
+
                     unknownGroup = true;
-                    throw nullGroup;
+                    throw new Exception();
+
                 }
                 else if (textParts.Count != 5)
                 {
-                    Exception formatError = new Exception();
                     badFormat = true;
-                    throw formatError;
+                    throw new Exception();
                 }
-                
-
 
 
                 Groups group = _context.Groups.Where(x => x.GroupName == groupName).First();
@@ -237,7 +260,7 @@ namespace Twillo_Test.Controllers
                 {
                     foreach (var g in groupMembers)
                     {
-                        SendText($"Hi, {g.MemberName}! You've just been invited to {userEvent} on {eventDateTime.ToString()}  at {eventVenue}, {eventLoc}. Respond with 'yes {tempEvent.EventId}' if you accept, and 'no {tempEvent.EventId}' if you decline.", g.PhoneNumber);
+                        SendText($"Hi, {g.MemberName}! {userInfo.FirstName} just invited you to {userEvent} on {eventDateTime.ToString()}  at {eventVenue}, {eventLoc}. Respond with 'yes {tempEvent.EventId}' if you accept, and 'no {tempEvent.EventId}' if you decline.", g.PhoneNumber);
                     }
                 }
             }
@@ -255,7 +278,7 @@ namespace Twillo_Test.Controllers
                 {
                     SendErrorText(incomingMessage, "That group doesn't exist.");
                 }
-                else if (badNumber)
+                else if (unknownUser)
                 {
                     SendText("Looks like you don't have an account with us. \nIn order to create events or groups, please sign up at www.notifly.azurewebsites.net \n Have a nice day!", incomingMessage.From);
                 }
@@ -287,6 +310,7 @@ namespace Twillo_Test.Controllers
         {
             bool badNumber = false;
             bool outOfRange = false;
+            bool unknownUser = false;
 
 
             try
@@ -301,7 +325,14 @@ namespace Twillo_Test.Controllers
 
 
 
-                var user = _context.AspNetUsers.Where(x => x.PhoneNumber == incomingMessage.From).First();
+                UserInfo userInfo = _context.UserInfo.Where(x => x.PhoneNumber == incomingMessage.From).First();
+                if (userInfo == null)
+                {
+                    unknownUser = true;
+                    throw new Exception();
+                }
+
+                AspNetUsers user = _context.AspNetUsers.Where(x => x.PhoneNumber == incomingMessage.From).First();
 
                 List<EventTable> userEvents = _context.EventTable.Where(x => x.UserId == user.Id).ToList();
 
@@ -363,14 +394,14 @@ namespace Twillo_Test.Controllers
 
                 foreach (var e in eventMembers)
                 {
-                    SendText($"Hey, {e.MemberName}! Just a reminder: You have {timeLeft} until {userEvent.EventName}. Are you still coming? You can still RSVP by texting back with 'yes {userEvent.EventId}' or 'no {userEvent.EventId}'", e.PhoneNumber);
+                    SendText($"Hey, {e.MemberName}! Just a reminder from {userInfo.FirstName} You have {timeLeft} until {userEvent.EventName}. Are you still coming? You can still RSVP by texting back with 'yes {userEvent.EventId}' or 'no {userEvent.EventId}'", e.PhoneNumber);
                 }
             }
             catch (Exception)
             {
                 if (badNumber)
                 {
-                    SendErrorText(incomingMessage, "That's not a valid event number.");
+                    SendErrorText(incomingMessage, $"{userNumberString} isn't a number ಠ_ಠ.");
                     SendListOfEvents(incomingMessage);
                 }
                 else if (outOfRange)
@@ -378,11 +409,73 @@ namespace Twillo_Test.Controllers
                     SendErrorText(incomingMessage, "That event doesn't exist.");
                     SendListOfEvents(incomingMessage);
                 }
+                else if (unknownUser)
+                {
+                    SendText("Looks like you don't have an account with us. \nIn order to create events or groups, please sign up at www.notifly.azurewebsites.net \n Have a nice day!", incomingMessage.From);
+                }
 
 
             }
 
         }
+
+        public void SendHelpText(SmsRequest incomingMessage, string helpNumberString)
+        {
+            bool parseWorked = true;
+            bool outOfRange = false;
+            try
+            {
+                //int helpNumber = int.Parse(helpNumberString);
+                parseWorked = int.TryParse(helpNumberString, out int helpNumber);
+                if (parseWorked == false)
+                {
+                    throw new Exception();
+                }
+                if (helpNumber == 0)
+                {
+                    SendText("Hi! Need some help? No problem! What would you like to know how to do? Text back the letter 'h' and the number of the topic you would like to learn about. \n1. Getting started. \n2. Creating Events \n3. Creating Groups \n4. Viewing Events and Sending Reminders", incomingMessage.From);
+                }
+                else if (helpNumber == 1)
+                {
+                    SendText("Ready to start Notiflying? To get started, you first need to sign up. Just go to notifly.azurewebsites.net. Once you're registered, you can do everything right from your phone's messaging app. Text back 'h' or '?' to see the help menu again.", incomingMessage.From);
+                }
+                else if (helpNumber == 2)
+                {
+                    SendText("To create an event you need to have this format. Be sure to have everything on a new line and have the same date format as listed. \nEvent Name \nEvent Date (ex. 05/29/2020 4:40 PM) \nEvent Venue (ex. Denny's) \nEvent Location (ex. 'Detroit, MI' or '48127') \nThe Group Name", incomingMessage.From);
+                }
+                else if (helpNumber == 3)
+                {
+                    SendText("To create a group, you need to follow this format (Hint: be sure to follow the exact format for phone number, including the '+'): \nCreate Group \nGroup Member 1 (ex. John Smith) \nMember 1 Phone Number (ex. +1734###6565) \nGroup Member 2 \nMember 2 Phone Number (ex. +1313###2495) \n \nText back 'h' or '?' to see the help menu again", incomingMessage.From);
+                }
+                else if (helpNumber == 4)
+                {
+                    SendText("To see your events, just text back either 'e' or 'events.' After you see your events, you can send reminders for each event by responding with 'r' and the number of the event. \nText back 'h' or '?' to see the help menu again", incomingMessage.From);
+                }
+                else if (helpNumber > 4 || helpNumber < 1)
+                {
+                    outOfRange = true;
+                    throw new Exception();
+                }
+            }
+            catch (Exception)
+            {
+                if (parseWorked == false)
+                {
+                    SendErrorText(incomingMessage, $"{helpNumberString} isn't a number. ಠ_ಠ");
+                }
+                else if (outOfRange)
+                {
+                    SendErrorText(incomingMessage, "That number you chose is out of range.");
+                }
+
+            }
+
+
+
+
+        }
+
+
 
         public void CreateGroup(SmsRequest incomingMessage)
         {
@@ -390,9 +483,9 @@ namespace Twillo_Test.Controllers
 
             try
             {
-                
+
                 var user = _context.AspNetUsers.Where(x => x.PhoneNumber == incomingMessage.From).First();
-                if(user == null)
+                if (user == null)
                 {
                     Exception unknownUser = new Exception();
                     badNumber = true;
@@ -413,7 +506,7 @@ namespace Twillo_Test.Controllers
                 List<string> memberNumbers = new List<string>();
                 for (int i = 2; i < textParts.Count; i++)
                 {
-                    if(i % 2 == 0)
+                    if (i % 2 == 0)
                     {
                         memberNames.Add(textParts[i]);
                     }
@@ -441,7 +534,7 @@ namespace Twillo_Test.Controllers
                 {
                     SendText("Looks like you don't have an account with us. \nIn order to create events or groups, please sign up at www.notifly.azurewebsites.net \n Have a nice day!", incomingMessage.From);
                 }
-                
+
             }
         }
 
@@ -453,8 +546,9 @@ namespace Twillo_Test.Controllers
         public void SendListOfEvents(SmsRequest incomingMessage)
         {
             var user = _context.AspNetUsers.Where(x => x.PhoneNumber == incomingMessage.From).First();
+            UserInfo userInfo = _context.UserInfo.Where(x => x.UserId == user.Id).First();
             List<EventTable> userEvents = _context.EventTable.Where(x => x.UserId == user.Id).ToList();
-            string reminderBody = "Hi! These are your events. Would you like to send out reminders? If so, reply to this text with the letter r and the number of the event (ex. 'r 12'). \n";
+            string reminderBody = $"These are your events, {userInfo.FirstName}. If you want to send out reminders, reply to this text with the letter r and the number of the event (ex. 'r 12'). \n";
 
 
 

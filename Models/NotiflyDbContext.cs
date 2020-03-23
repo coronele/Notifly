@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Configuration;
 
-
 namespace NotiflyV0._1.Models
 {
     public partial class NotiflyDbContext : DbContext
@@ -29,9 +28,8 @@ namespace NotiflyV0._1.Models
         public virtual DbSet<GroupMembers> GroupMembers { get; set; }
         public virtual DbSet<Groups> Groups { get; set; }
         public virtual DbSet<MemberRsvp> MemberRsvp { get; set; }
-
+        public virtual DbSet<UserInfo> UserInfo { get; set; }
         public IConfiguration Configuration { get; }
-
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -41,8 +39,6 @@ namespace NotiflyV0._1.Models
                 optionsBuilder.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
             }
         }
-
-
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -147,15 +143,19 @@ namespace NotiflyV0._1.Models
             modelBuilder.Entity<EventTable>(entity =>
             {
                 entity.HasKey(e => e.EventId)
-                    .HasName("PK__EventTab__7944C810C82E21FD");
+                    .HasName("PK__EventTab__7944C810E23EAC94");
 
                 entity.Property(e => e.DateAndTime).HasColumnType("datetime");
 
-                entity.Property(e => e.EventDescription).HasMaxLength(300);
+                entity.Property(e => e.EventDescription).HasMaxLength(400);
 
                 entity.Property(e => e.EventName)
                     .IsRequired()
                     .HasMaxLength(40);
+
+                entity.Property(e => e.GroupName).HasMaxLength(50);
+
+                entity.Property(e => e.NotificationDate).HasColumnType("datetime");
 
                 entity.Property(e => e.UserId)
                     .IsRequired()
@@ -181,19 +181,21 @@ namespace NotiflyV0._1.Models
             modelBuilder.Entity<GroupMembers>(entity =>
             {
                 entity.HasKey(e => e.MemberId)
-                    .HasName("PK__GroupMem__0CF04B18AFE674E3");
-
-                entity.Property(e => e.Groups).HasMaxLength(450);
+                    .HasName("PK__GroupMem__0CF04B18D3A6E672");
 
                 entity.Property(e => e.MemberName)
                     .IsRequired()
                     .HasMaxLength(40);
+
+                entity.Property(e => e.PhoneNumber)
+                    .IsRequired()
+                    .HasMaxLength(20);
             });
 
             modelBuilder.Entity<Groups>(entity =>
             {
                 entity.HasKey(e => e.GroupId)
-                    .HasName("PK__Groups__149AF36AE6E0F36A");
+                    .HasName("PK__Groups__149AF36A481640AC");
 
                 entity.Property(e => e.GroupName)
                     .IsRequired()
@@ -213,11 +215,13 @@ namespace NotiflyV0._1.Models
             modelBuilder.Entity<MemberRsvp>(entity =>
             {
                 entity.HasKey(e => e.Rsvpid)
-                    .HasName("PK__MemberRS__BD17ED562F555656");
+                    .HasName("PK__MemberRS__BD17ED56371D50FB");
 
                 entity.ToTable("MemberRSVP");
 
                 entity.Property(e => e.Rsvpid).HasColumnName("RSVPId");
+
+                entity.Property(e => e.MemberName).HasMaxLength(60);
 
                 entity.Property(e => e.Rsvp).HasColumnName("RSVP");
 
@@ -232,6 +236,20 @@ namespace NotiflyV0._1.Models
                     .HasForeignKey(d => d.MemberId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK__MemberRSV__Membe__66603565");
+            });
+
+            modelBuilder.Entity<UserInfo>(entity =>
+            {
+                entity.Property(e => e.FirstName).HasMaxLength(60);
+
+                entity.Property(e => e.LastName).HasMaxLength(60);
+
+                entity.Property(e => e.UserId).HasMaxLength(450);
+
+                entity.HasOne(d => d.User)
+                    .WithMany(p => p.UserInfo)
+                    .HasForeignKey(d => d.UserId)
+                    .HasConstraintName("FK__UserInfo__UserId__75A278F5");
             });
 
             OnModelCreatingPartial(modelBuilder);

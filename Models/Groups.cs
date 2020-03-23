@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 
 namespace NotiflyV0._1.Models
 {
@@ -15,15 +14,13 @@ namespace NotiflyV0._1.Models
         {
             GroupName = groupName;
             UserId = userId;
-            
+
         }
 
-
         public int GroupId { get; set; }
-
-        [StringLength(30, MinimumLength = 3, ErrorMessage = "Must be between 3-30 characters")]
         public string GroupName { get; set; }
         public string UserId { get; set; }
+
         public virtual AspNetUsers User { get; set; }
         public virtual ICollection<EventTable> EventTable { get; set; }
     }

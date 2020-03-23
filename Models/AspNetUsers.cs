@@ -13,6 +13,7 @@ namespace NotiflyV0._1.Models
             AspNetUserTokens = new HashSet<AspNetUserTokens>();
             EventTable = new HashSet<EventTable>();
             Groups = new HashSet<Groups>();
+            UserInfo = new HashSet<UserInfo>();
         }
 
         public string Id { get; set; }
@@ -37,5 +38,6 @@ namespace NotiflyV0._1.Models
         public virtual ICollection<AspNetUserTokens> AspNetUserTokens { get; set; }
         public virtual ICollection<EventTable> EventTable { get; set; }
         public virtual ICollection<Groups> Groups { get; set; }
+        public virtual ICollection<UserInfo> UserInfo { get; set; }
     }
 }
