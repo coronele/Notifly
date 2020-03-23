@@ -26,22 +26,22 @@ namespace NotiflyV0._1.Controllers
 
         public IActionResult Index()
         {
-            string id = User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            List<EventTable> events = _context.EventTable.Where(x => x.UserId == id).ToList();
+           // string id = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+           // List<EventTable> events = _context.EventTable.Where(x => x.UserId == id).ToList();
 
-           List<EventTable> dueEvents = TimeManager.ListDueEvents(events);
+           //List<EventTable> dueEvents = TimeManager.ListDueEvents(events);
 
-           //if there are any due events, go to send reminders
-           if(dueEvents.Count > 0)
-           {
-               return RedirectToAction("../Sms/SendReminder", dueEvents);
-           }
-           //otherwise return to normal view.
-           else
-           {
+           ////if there are any due events, go to send reminders
+           //if(dueEvents.Count > 0)
+           //{
+           //    return RedirectToAction("../Sms/SendReminder", dueEvents);
+           //}
+           ////otherwise return to normal view.
+           //else
+           //{
                return View();
 
-           }
+           //}
         }
 
         public IActionResult Events()
@@ -81,8 +81,10 @@ namespace NotiflyV0._1.Controllers
 
         public IActionResult Groups()
         {
+            string id = User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
-            return View(_context.Groups.ToList());
+            List<Groups> groups = _context.Groups.Where(x => x.UserId == id).ToList();
+            return View(groups);
 
 
         }
@@ -241,11 +243,23 @@ namespace NotiflyV0._1.Controllers
         }
 
 
+        public IActionResult Tutorial()
+        {
+            return View();
+        }
+
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
+
+
+
+
+
     }
 }
 
