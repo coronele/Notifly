@@ -26,10 +26,6 @@ namespace Twillo_Test.Controllers
         private readonly NotiflyDbContext _context;
 
 
-        //TWILIO NEEDS THIS FORMAT FOR PHONE NUMBER +1734###6670
-
-
-
 
         public SmsController(IConfiguration configuration, NotiflyDbContext context)
         {
@@ -37,10 +33,6 @@ namespace Twillo_Test.Controllers
             TwilioAuthToken = configuration.GetSection("APIKeys")["TwilioAuthToken"];
             _context = context;
         }
-
-
-
-
 
         [HttpPost]
         public TwiMLResult ReceiveText(SmsRequest incomingMessage)
@@ -80,17 +72,7 @@ namespace Twillo_Test.Controllers
             {
                 CreateGroup(incomingMessage);
             }
-            //else if(messageParts[0] == "delete")
-            //{
-            //    if(messageParts[1] == "event")
-            //    {
-            //        DeleteEvent();
-            //    }
-            //    else if(messageParts[1] == "group")
-            //    {
-            //        DeleteGroup();
-            //    }
-            //}
+            
             else
             {
                 AddEventToDatabase(incomingMessage);
@@ -100,9 +82,6 @@ namespace Twillo_Test.Controllers
             var messagingResponse = new MessagingResponse();
 
             return TwiML(messagingResponse);
-
-
-
 
         }
 
@@ -280,7 +259,7 @@ namespace Twillo_Test.Controllers
                 }
                 else if (unknownUser)
                 {
-                    SendText("Looks like you don't have an account with us. \nIn order to create events or groups, please sign up at www.notifly.azurewebsites.net \n Have a nice day!", incomingMessage.From);
+                    SendRegisterText(incomingMessage);
                 }
                 else
                 {
@@ -290,8 +269,6 @@ namespace Twillo_Test.Controllers
             }
 
         }
-
-
 
 
         public void SendText(string body, string number)
@@ -411,7 +388,7 @@ namespace Twillo_Test.Controllers
                 }
                 else if (unknownUser)
                 {
-                    SendText("Looks like you don't have an account with us. \nIn order to create events or groups, please sign up at www.notifly.azurewebsites.net \n Have a nice day!", incomingMessage.From);
+                    SendRegisterText(incomingMessage);
                 }
 
 
@@ -532,16 +509,11 @@ namespace Twillo_Test.Controllers
             {
                 if (badNumber)
                 {
-                    SendText("Looks like you don't have an account with us. \nIn order to create events or groups, please sign up at www.notifly.azurewebsites.net \n Have a nice day!", incomingMessage.From);
+                    
                 }
 
             }
         }
-
-
-
-
-
 
         public void SendListOfEvents(SmsRequest incomingMessage)
         {
@@ -574,20 +546,9 @@ namespace Twillo_Test.Controllers
             }
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        public void SendRegisterText(SmsRequest incomingMessage)
+        {
+            SendText("Looks like you don't have an account with us. \nIn order to create events or groups, please sign up at www.notifly.azurewebsites.net \n Have a nice day!", incomingMessage.From);
+        }
     }
 }
