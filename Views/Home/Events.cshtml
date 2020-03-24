@@ -1,7 +1,7 @@
 ﻿@model List<EventTable>
 @{
     ViewData["Title"] = "Events";
-    
+
 }
 
 <h1 class="text-white text-center">Events</h1>
@@ -14,17 +14,19 @@
         <th>Date</th>
         <th>Venue</th>
         <th>Location</th>
+        <th>Details</th>
         <th>Rsvp</th>
     </tr>
     @foreach (var m in Model)
     {
-        <tr class="bg-white text-dark">
+        <tr class="bg-light text-dark">
             <td>@m.EventName</td>
             <td>@m.EventDescription</td>
             <td>@m.GroupName</td>
             <td>@m.DateAndTime</td>
             <td>@m.Venue</td>
             <td>@m.VenueLocation</td>
+            <td><button class="btn btn-outline-success" onclick="window.location.href='../Home/EventDetails?eventId=@m.EventId'">Details</button></td>
             <td><button class="btn btn-outline-success" onclick="window.location.href='../Home/CheckRsvp?groupId=@m.GroupId&eventId=@m.EventId'">RSVPs</button></td>
         </tr>
     }
