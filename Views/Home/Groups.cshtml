@@ -5,7 +5,7 @@
 <br />
 <br />
 <table class="table table-bordered table-striped table-light">
-    <tr class="text-light" style="background-color:#39c">
+    <tr class="text-light bg-info">
         <th>Group Name</th>
         <th>More Details</th>
         <th>Delete Group</th>
@@ -15,7 +15,7 @@
         <tr class="bg-white text-dark">
             <td>@g.GroupName</td>
             <td><button class="btn btn-info" onclick="window.location.href='../Home/GroupDetails?groupId=@g.GroupId'">Group Details</button></td>
-            <td><button onclick="window.location.href = '../Task/RemoveGroup?groupId=@g.GroupId'" type="button" class="btn btn-dark btn-outline-danger">🗑️</button></td>
+            <td><button onclick="window.location.href = '../Home/RemoveGroup?groupId=@g.GroupId'" type="button" class="btn btn-dark btn-outline-danger">🗑️</button></td>
         </tr>
     }
 </table>

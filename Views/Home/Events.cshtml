@@ -9,7 +9,7 @@
 <br />
 <br />
 <table class="table table-bordered table-striped table-light">
-    <tr class="text-light" style="background-color:#39c">
+    <tr class="text-light bg-info">
         <th>Name</th>
         <th>Group Name</th>
         <th>Date</th>
@@ -29,7 +29,7 @@
             <td>@m.VenueLocation</td>
             <td><button class="btn btn-outline-success" onclick="window.location.href='../Home/EventDetails?eventId=@m.EventId'">Details</button></td>
             <td><button class="btn btn-outline-info" onclick="window.location.href='../Home/CheckRsvp?groupId=@m.GroupId&eventId=@m.EventId'">RSVPs</button></td>
-            <td><button onclick="window.location.href = '../Task/DeleteEvent?eventId=@m.EventId'" type="button" class="btn btn-dark btn-outline-danger">🗑️</button></td>
+            <td><button onclick="window.location.href = '../Home/DeleteEvent?eventId=@m.EventId'" type="button" class="btn btn-dark btn-outline-danger">🗑️</button></td>
         </tr>
     }
 

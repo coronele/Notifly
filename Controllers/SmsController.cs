@@ -60,7 +60,7 @@ namespace Twillo_Test.Controllers
 
 
             }
-            else if (incomingMessage.Body.ToLower() == "events" || incomingMessage.Body.ToLower() == "event" || incomingMessage.Body.ToLower() == "e")
+            else if (messageParts[0].ToLower() == "events" || messageParts[0].ToLower() == "event" || messageParts[0].ToLower() == "e")
             {
                 SendListOfEvents(incomingMessage);
             }
@@ -200,7 +200,7 @@ namespace Twillo_Test.Controllers
                 }
 
                 //exception handling!
-                if (DateTime.Now.Subtract(eventDateTime).TotalSeconds > 0)
+                if (eventDateTime < DateTime.Now)
                 {
 
                     badDate = true;
@@ -458,7 +458,7 @@ namespace Twillo_Test.Controllers
 
         public void CreateGroup(SmsRequest incomingMessage)
         {
-            bool badNumber = false;
+            bool unknownUser = false;
 
             try
             {
@@ -467,9 +467,9 @@ namespace Twillo_Test.Controllers
                 var user = _context.AspNetUsers.Where(x => x.Id == userInfo.UserId).First();
                 if (userInfo == null)
                 {
-                    Exception unknownUser = new Exception();
-                    badNumber = true;
-                    throw unknownUser;
+                    
+                    unknownUser = true;
+                    throw new Exception();
                 }
 
                 StringReader reader = new StringReader(incomingMessage.Body);
@@ -510,9 +510,9 @@ namespace Twillo_Test.Controllers
             }
             catch (Exception)
             {
-                if (badNumber)
+                if (unknownUser)
                 {
-                    
+                    SendRegisterText(incomingMessage);
                 }
 
             }
