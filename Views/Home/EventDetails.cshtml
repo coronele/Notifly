@@ -1,0 +1,62 @@
+﻿
+@{
+    ViewData["Title"] = "EventDetails";
+}
+
+@model YelpDetailObject
+
+<h1>Event Details</h1>
+
+<B>** Viewbag test area **</B>
+<h3>@ViewBag.thisEvent.EventName</h3>
+<br />
+@ViewBag.thisEvent.EventDescription
+<br />
+@ViewBag.thisEvent.Venue in @ViewBag.thisEvent.VenueLocation
+<br />
+on @ViewBag.thisEvent.DateAndTime
+
+@if (Model.name == null)
+{
+    <h2>at @ViewBag.thisEvent.Venue</h2>
+}
+else if ((Model.name.Trim().ToLower().Contains(ViewBag.thisEvent.Venue.Trim().ToLower())) && (Model.name != null))
+{
+    <h2>at @Model.name</h2>
+    <table class="table">
+        <tr>
+            <th>
+                Address
+            </th>
+            <td>
+                @Model.location.address1<br />
+                @Model.location.city, @Model.location.state, @Model.location.zip_code
+            </td>
+        </tr>
+        <tr>
+            <th>
+                Phone
+            </th>
+            <td>
+                @Model.phone
+            </td>
+        </tr>
+        <tr>
+            <th>
+                Rating
+            </th>
+            <td>
+                <B>@Model.rating</B> out of 5
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <img src="@Model.photos.First()" width="480" />
+            </td>
+        </tr>
+    </table>
+}
+else
+{
+    <h2>at @ViewBag.thisEvent.Venue</h2>
+}

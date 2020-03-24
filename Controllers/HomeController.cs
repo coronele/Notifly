@@ -1,13 +1,14 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using NotiflyV0._1.Models;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Http;
 using System.Security.Claims;
-
-
-
+using System.Threading.Tasks;
 
 namespace NotiflyV0._1.Controllers
 {
@@ -15,10 +16,12 @@ namespace NotiflyV0._1.Controllers
     public class HomeController : Controller
     {
         private readonly NotiflyDbContext _context;
+        private readonly string YelpKey;
 
-        public HomeController(NotiflyDbContext context)
+        public HomeController(NotiflyDbContext context, IConfiguration configuration)
         {
             _context = context;
+            YelpKey = configuration.GetSection("APIKeys")["Yelp"];
         }
 
         public IActionResult Index()
@@ -29,7 +32,7 @@ namespace NotiflyV0._1.Controllers
             try
             {
                 UserInfo userInfo = _context.UserInfo.Where(x => x.UserId == id).First();
-                if(userInfo == null)
+                if (userInfo == null)
                 {
                     throw new System.Exception();
                 }
@@ -89,7 +92,7 @@ namespace NotiflyV0._1.Controllers
             }
 
 
-            
+
         }
 
         public IActionResult DeleteEvent(int id)
@@ -102,6 +105,32 @@ namespace NotiflyV0._1.Controllers
                 _context.SaveChanges();
             }
             return RedirectToAction("Events");
+        }
+
+        public async Task<IActionResult> EventDetails(int eventId)
+        {
+            var client = new HttpClient();
+            client.BaseAddress = new Uri("https://api.yelp.com/v3/businesses/");
+            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {YelpKey}");
+
+            EventTable foundEvent = _context.EventTable.Where(x => x.EventId == eventId).First();
+
+            var searchResponse = await client.GetAsync($"search?term={foundEvent.Venue}&location={foundEvent.VenueLocation}&sortby=best_match");
+            var foundLocation = await searchResponse.Content.ReadAsAsync<YelpSearchObject>();
+
+            ViewBag.thisEvent = foundEvent;
+
+            if ((foundLocation == null) || (foundLocation.total == 0))
+            {
+                YelpDetailObject ydo = new YelpDetailObject();
+                return View(ydo);
+            }
+            else
+            {
+                var searchDetailResponse = await client.GetAsync($"{foundLocation.businesses.First().id}");
+                var foundDetails = await searchDetailResponse.Content.ReadAsAsync<YelpDetailObject>();
+                return View(foundDetails);
+            }
         }
 
         //public IActionResult CreateEvent()

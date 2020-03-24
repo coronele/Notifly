@@ -14,6 +14,7 @@
         <th>Date</th>
         <th>Venue</th>
         <th>Location</th>
+        <th>Details</th>
         <th>Rsvp</th>
     </tr>
     @foreach (var m in Model)
@@ -25,6 +26,7 @@
             <td>@m.DateAndTime</td>
             <td>@m.Venue</td>
             <td>@m.VenueLocation</td>
+            <td><button class="btn btn-primary" onclick="window.location.href='../Home/EventDetails?eventId=@m.EventId'">Details</button></td>
             <td><button class="btn btn-primary" onclick="window.location.href='../Home/CheckRsvp?groupId=@m.GroupId&eventId=@m.EventId'">RSVPs</button></td>
         </tr>
     }
