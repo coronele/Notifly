@@ -68,7 +68,7 @@ namespace Twillo_Test.Controllers
             {
                 SendReminder(incomingMessage, messageParts[1]);
             }
-            else if (messageParts[0] == "create" || messageParts[0] == "new")
+            else if (messageParts[0].ToLower() == "create" || messageParts[0].ToLower() == "new")
             {
                 CreateGroup(incomingMessage);
             }
@@ -410,19 +410,21 @@ namespace Twillo_Test.Controllers
                 }
                 if (helpNumber == 0)
                 {
-                    SendText("Hi! Need some help? No problem! What would you like to know how to do? Text back the letter 'h' and the number of the topic you would like to learn about. \n1. Getting started. \n2. Creating Events \n3. Creating Groups \n4. Viewing Events and Sending Reminders", incomingMessage.From);
+                    SendText("Hi! Need some help? No problem! What would you like to know how to do? Text back the letter 'h', space, and then number of the topic you would like to learn about. (ex. 'h 1') \n1. Getting started. \n2. Creating Groups \n3. Creating Events \n4. Viewing Events and Sending Reminders", incomingMessage.From);
                 }
                 else if (helpNumber == 1)
                 {
                     SendText("Ready to start Notiflying? To get started, you first need to sign up. Just go to notifly.azurewebsites.net. Once you're registered, you can do everything right from your phone's messaging app. Text back 'h' or '?' to see the help menu again.", incomingMessage.From);
+                    
                 }
                 else if (helpNumber == 2)
                 {
-                    SendText("To create an event you need to have this format. Be sure to have everything on a new line and have the same date format as listed. \nEvent Name \nEvent Date (ex. 05/29/2020 4:40 PM) \nEvent Venue (ex. Denny's) \nEvent Location (ex. 'Detroit, MI' or '48127') \nThe Group Name", incomingMessage.From);
+                    SendText("To create a group, you need to follow this format with everything on a new line (Hint: be sure to follow the exact format for phone number, including the '+') \n'Create Group' \nGroup Name \n'Name' \nPhone Number (+1734###6565) \nName \nPhone Number (+1313###2495) \n Text back 'h' or '?' to see the help menu again", incomingMessage.From);
                 }
                 else if (helpNumber == 3)
                 {
-                    SendText("To create a group, you need to follow this format (Hint: be sure to follow the exact format for phone number, including the '+'): \nCreate Group \nGroup Member 1 (ex. John Smith) \nMember 1 Phone Number (ex. +1734###6565) \nGroup Member 2 \nMember 2 Phone Number (ex. +1313###2495) \n \nText back 'h' or '?' to see the help menu again", incomingMessage.From);
+                    
+                    SendText("To create an event, be sure to first make a group. Then, once you're ready, you need to have this format. Be sure to have everything on a new line and have the same date format as listed. \nEvent Name \nEvent Date (ex. 05/29/2020 4:40 PM) \nEvent Venue (ex. Denny's) \nEvent Location (ex. 'Detroit, MI' or '48127') \nThe Group Name", incomingMessage.From);
                 }
                 else if (helpNumber == 4)
                 {
@@ -461,8 +463,9 @@ namespace Twillo_Test.Controllers
             try
             {
 
-                var user = _context.AspNetUsers.Where(x => x.PhoneNumber == incomingMessage.From).First();
-                if (user == null)
+                UserInfo userInfo = _context.UserInfo.Where(x => x.PhoneNumber == incomingMessage.From).First();
+                var user = _context.AspNetUsers.Where(x => x.Id == userInfo.UserId).First();
+                if (userInfo == null)
                 {
                     Exception unknownUser = new Exception();
                     badNumber = true;
