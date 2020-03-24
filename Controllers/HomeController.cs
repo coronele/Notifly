@@ -95,15 +95,20 @@ namespace NotiflyV0._1.Controllers
 
         }
 
-        public IActionResult DeleteEvent(int id)
+        public IActionResult DeleteEvent(int eventId)
         {
             //Created a button in the Events View to use this function. 
-            EventTable find = _context.EventTable.Find(id);
-            if (find != null)
+            EventTable foundEvent = _context.EventTable.Find(eventId);
+            List<MemberRsvp> rsvps = _context.MemberRsvp.Where(x => x.EventId == foundEvent.EventId).ToList();
+            foreach(var r in rsvps)
             {
-                _context.Remove(find);
+                _context.MemberRsvp.Remove(r);
                 _context.SaveChanges();
             }
+
+            _context.EventTable.Remove(foundEvent);
+            _context.SaveChanges();
+            
             return RedirectToAction("Events");
         }
 
@@ -298,11 +303,19 @@ namespace NotiflyV0._1.Controllers
             Groups foundGroup = _context.Groups.Find(groupId);
 
             List<EventTable> events = _context.EventTable.Where(x => x.GroupId == groupId).ToList();
+            
 
             if (events.Count > 0)
             {
                 foreach (var e in events)
                 {
+                    List<MemberRsvp> rsvps = _context.MemberRsvp.Where(x => x.EventId == e.EventId).ToList();
+                    foreach(var r in rsvps)
+                    {
+                        _context.MemberRsvp.Remove(r);
+                        _context.SaveChanges();
+                    }
+
                     _context.EventTable.Remove(e);
                     _context.SaveChanges();
                 }
