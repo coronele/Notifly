@@ -5,10 +5,10 @@
 
 @model List<GroupMembers>
 
-<h1>Group Members</h1>
+<h1 class="text-light text-center">Group Members</h1>
 
 <table class="table table-bordered table-striped">
-    <tr>
+    <tr class="text-light" style="background-color:#39c">
         <th>Name</th>
         <th>Phone Number</th>
         <th>Update Info</th>
@@ -16,7 +16,7 @@
     </tr>
     @foreach (GroupMembers member in Model)
     {
-<tr>
+<tr class="bg-white text-dark">
     <td>@member.MemberName</td>
     <td>@member.PhoneNumber</td>
     <td><button class="btn btn-primary" onclick="window.location.href='../Home/EditMember?memberid=@member.MemberId'">Edit Member</button></td>
@@ -24,4 +24,4 @@
 </tr>
     }
     </table>
-<button class="btn btn-success" onclick="window.location.href='../Home/AddMember'">Add Member</button>
+<button class="btn btn-success" onclick="window.location.href='../Home/AddMember?groupId=@Model[0].Groups'">Add Member</button>

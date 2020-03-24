@@ -284,10 +284,11 @@ namespace NotiflyV0._1.Controllers
             return RedirectToAction("GroupDetails");
         }
 
+        [HttpGet]
         public IActionResult GroupDetails(int groupId)
         {
-            List<GroupMembers> members = _context.GroupMembers.Where(x => x.Groups == groupId).ToList();
-            return View(members);
+                List<GroupMembers> members = _context.GroupMembers.Where(x => x.Groups == groupId).ToList();
+                return View(members);
         }
 
 
@@ -343,43 +344,27 @@ namespace NotiflyV0._1.Controllers
             return View();
         }
 
-        //[HttpGet]
-        //public IActionResult AddMember()
-        //{
+        [HttpGet]
+        public IActionResult AddMember(int groupId)
+        {
 
-        //    return View();
-        //}
+            return View(groupId);
+        }
 
-        //[HttpPost]
-        //public IActionResult AddMember(GroupMembers addMember, int id)
-        //{
-
-        //    if (ModelState.IsValid)
-        //    {
-        //        _context.GroupMembers.Where(x => x.Groups == GroupDetails.id);
-        //        _context.Add(addMember);
-        //        _context.SaveChanges();
-        //        RedirectToAction("GroupDetails");
-        //    }
-
-        //    RedirectToAction("Groups", addMember);
-
-
-        //    //List<GroupMembers> addMember = new GroupMembers(memberName, groupId, phoneNumber);
-
-        //    //_context.GroupMembers.Where(x => x.Groups == group.GroupId).ToList();
-        //    //if(ModelState.IsValid)
-        //    //{
-        //    //    _context.GroupMembers.Add(addMember);
-        //    //    _context.SaveChanges();
-        //    //    RedirectToAction("GroupDetails");
-        //    //    Groups group = _context.Groups.Find(groupId);
-        //    //}
-        //    //else
-        //    //{
-
-        //    //}
-        //}
+        [HttpPost]
+        public IActionResult AddMember(GroupMembers newMember)
+        {
+            if (ModelState.IsValid)
+            {
+                _context.Add(newMember);
+                _context.SaveChanges();
+                return RedirectToAction("Groups");
+            }
+            else
+            {
+                return View();
+            }
+        }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
