@@ -2,18 +2,19 @@
 @{
     ViewData["Title"] = "AddMember";
 }
+@model int
 
 <h1>Add Member!</h1>
 <br />
 <br />
-<form>
+<form action="../Home/AddMember" method="post">
     <input type="text" name="memberName" placeholder="Member's Name" />
     <input type="text" name="phoneNumber" placeholder="In this format: +1##########" />
     <br />
     <br />
+    <input type="hidden" name="Groups" value="@Model" />
+    <br />
+    <br />
     <input class="btn btn-primary" type="submit" value="Submit!" />
-    <br />
-    <br />
 </form>
 
-<button class="btn btn-success" onclick="window.location.href='../Home/GroupMember">Save Changes</button>
