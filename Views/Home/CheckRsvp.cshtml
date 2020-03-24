@@ -1,20 +1,19 @@
 ﻿@model List<MemberRsvp>
 
 
+<br />
+<br />
 <h1 class="text-light text-center">Responses for @ViewBag.Event.EventName</h1>
-
 <br />
 <br />
-<br />
-
 
 
 <table class="table table-bordered table-striped table-light ">
-    <tr>
+    <tr class="text-light" style="background-color:#39c">
         <th>MemberId</th>
         <th>Rsvp</th>
     </tr>
-    @foreach(var m in Model)
+    @foreach (var m in Model)
     {
         <tr>
             <td>@m.MemberName</td>
