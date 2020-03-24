@@ -1,7 +1,7 @@
 ﻿@model List<MemberRsvp>
 
 
-<h1>Responses for @ViewBag.Event.EventName</h1>
+<h1 class="text-light text-center">Responses for @ViewBag.Event.EventName</h1>
 
 <br />
 <br />
@@ -53,7 +53,9 @@
         ]);
 
         // Optional; add a title and set the width and height of the chart
-        var options = { 'title': 'Responses (@Model.Count)', 'width': 800, 'height': 800 };
+        var options = {
+            'title': 'Responses (@Model.Count)', 'width': 800, 'height': 800, 'backgroundColor': { fill: 'transparent' }
+        };
 
         // Display the chart inside the <div> element with id="piechart"
         var chart = new google.visualization.PieChart(document.getElementById('piechart'));

@@ -1,17 +1,17 @@
 ﻿@model List<Groups>
-<h1>Your Groups</h1>
+<h1 class="text-light text-center">Your Groups</h1>
 <br />
 <br />
 <br />
-<table class="table table-bordered table-striped table-light">
-    <tr>
+<table class="table table-bordered table-striped">
+    <tr class="text-light" style="background-color:#39c">
         <th>Group Name</th>
         <th>More Details</th>
         <th>Delete Group</th>
     </tr>
     @foreach(var g in Model)
     {
-        <tr>
+        <tr class="bg-white text-dark">
             <td>@g.GroupName</td>
             <td><button class="btn btn-primary" onclick="window.location.href='../Home/GroupDetails?groupId=@g.GroupId'">Group Details</button></td>
             <td><button class="btn btn-danger" onclick="window.location.href='../Home/RemoveGroup?groupId=@g.GroupId'">Remove Group</button></td>
@@ -22,4 +22,5 @@
 <br />
 <br />
 <br />
-<button class="btn btn-success" onclick="window.location.href='../Home/CreateGroup'">Create Group</button>
+
+<button class="btn btn-warning btn-lg" onclick="window.location.href='../Home/CreateGroup'">Create Group</button>
