@@ -1,13 +1,13 @@
 ﻿@model List<EventTable>
 @{
     ViewData["Title"] = "Events";
-    
+
 }
 
-<h1 class="text-light">Events</h1>
+<h1 class="text-white text-center">Events</h1>
 <br />
-<table class="table table-responsive table-striped">
-    <tr class="bg-secondary text-light">
+<table class="table table-bordered table-striped">
+    <tr class="text-light" style="background-color:#39c">
         <th>Name</th>
         <th>Description</th>
         <th>Group Name</th>
@@ -26,8 +26,8 @@
             <td>@m.DateAndTime</td>
             <td>@m.Venue</td>
             <td>@m.VenueLocation</td>
-            <td><button class="btn btn-primary" onclick="window.location.href='../Home/EventDetails?eventId=@m.EventId'">Details</button></td>
-            <td><button class="btn btn-primary" onclick="window.location.href='../Home/CheckRsvp?groupId=@m.GroupId&eventId=@m.EventId'">RSVPs</button></td>
+            <td><button class="btn btn-outline-success" onclick="window.location.href='../Home/EventDetails?eventId=@m.EventId'">Details</button></td>
+            <td><button class="btn btn-outline-success" onclick="window.location.href='../Home/CheckRsvp?groupId=@m.GroupId&eventId=@m.EventId'">RSVPs</button></td>
         </tr>
     }
 
