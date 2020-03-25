@@ -240,20 +240,20 @@ namespace NotiflyV0._1.Controllers
 
 
 
-        public IActionResult RemoveMember(int id)
+        public IActionResult RemoveMember(int memberId)
         {
             //In the ListGroups View, plan is to create a details button that will display the list
             //of members participating in the group that was selected. 7
             //This way, you could remove any individuals off the list. 
-            Groups findMember = _context.Groups.Find(id);
+            GroupMembers findMember = _context.GroupMembers.Find(memberId);
 
             if (findMember != null)
             {
-                _context.Groups.Remove(findMember);
+                _context.GroupMembers.Remove(findMember);
                 _context.SaveChanges();
             }
 
-            return RedirectToAction("Groups");
+            return RedirectToAction("GroupDetails");
         }
 
         [HttpGet]
@@ -284,14 +284,20 @@ namespace NotiflyV0._1.Controllers
             return RedirectToAction("GroupDetails");
         }
 
-        [HttpGet]
+        
         public IActionResult GroupDetails(int groupId)
         {
-                List<GroupMembers> members = _context.GroupMembers.Where(x => x.Groups == groupId).ToList();
+            List<GroupMembers> members = _context.GroupMembers.Where(x => x.Groups == groupId).ToList();
+            if (members.Count > 0)
+            {
                 return View(members);
+            }
+            else
+            {
+                return RedirectToAction("Groups");
+            }
+            
         }
-
-
 
         public IActionResult RemoveGroup(int groupId)
         {
@@ -352,18 +358,49 @@ namespace NotiflyV0._1.Controllers
         }
 
         [HttpPost]
-        public IActionResult AddMember(GroupMembers newMember)
+        public IActionResult AddMember(GroupMembers newMember, int groupId)
         {
             if (ModelState.IsValid)
             {
                 _context.Add(newMember);
                 _context.SaveChanges();
-                return RedirectToAction("Groups");
+                return RedirectToAction("GroupDetails", new { groupId });
             }
             else
             {
                 return View();
             }
+        }
+
+        [HttpGet]
+        public IActionResult EditEvent(int EventId)
+        {
+            EventTable findEvent = _context.EventTable.Find(EventId);
+            if (findEvent != null)
+            {
+                return View(findEvent);
+            }
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult EditEvent(EventTable updatedEvent)
+        {
+            EventTable dbEvent = _context.EventTable.Find(updatedEvent.EventId);
+            if (ModelState.IsValid)
+            {
+                dbEvent.EventName = updatedEvent.EventName;
+                dbEvent.EventDescription = updatedEvent.EventDescription;
+                dbEvent.GroupName = updatedEvent.GroupName;
+                dbEvent.DateAndTime = updatedEvent.DateAndTime;
+                dbEvent.Venue = updatedEvent.Venue;
+                dbEvent.VenueLocation = updatedEvent.VenueLocation;
+
+                _context.Entry(dbEvent).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                _context.Update(dbEvent);
+                _context.SaveChanges();
+            }
+            return View("Events");
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
