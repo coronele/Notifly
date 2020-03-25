@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Twillo_Test.Controllers;
 
 namespace NotiflyV0._1.Controllers
 {
@@ -17,6 +18,8 @@ namespace NotiflyV0._1.Controllers
     {
         private readonly NotiflyDbContext _context;
         private readonly string YelpKey;
+
+        SmsController smsController = new SmsController();
 
         public HomeController(NotiflyDbContext context, IConfiguration configuration)
         {
@@ -133,17 +136,56 @@ namespace NotiflyV0._1.Controllers
             }
         }
 
-        //public IActionResult CreateEvent()
-        //{
-        //    return View();
-        //}
+        [HttpGet]
+        public IActionResult AddEventToDatabase()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult AddEventToDatabase(EventTable newEvent)
+        {
+            newEvent.UserId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+            List<EventTable> eventList = _context.EventTable.Where(x => x.UserId == newEvent.UserId).ToList();
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    List<Groups> groupList = _context.Groups.Where(x => x.UserId == newEvent.UserId).ToList();
+                    bool groupMatch = false;
+
+                    for (int i = 0; i < groupList.Count; i++)
+                    {
+                        if (groupList[i].GroupName == newEvent.GroupName)
+                        {
+                            groupMatch = true;
+                            newEvent.GroupId = groupList[i].GroupId;
+                            break;
+                        }
+                    }
+                    if (groupMatch == false)
+                    {
+                        throw new Exception("Invalid group name");
+                    }
+
+                    _context.EventTable.Add(newEvent);
+                    _context.SaveChanges();
 
 
-        //public IActionResult CreateEvent()
-        //{
+                    return View();
+                }
+                else
+                {
+                    return View();
+                }
+            }
+            catch
+            {
+                return View();
+            }
 
-
-        //}
+        }
 
         public IActionResult Groups()
         {
@@ -280,24 +322,20 @@ namespace NotiflyV0._1.Controllers
                 _context.Entry(dbGroupMember).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
                 _context.Update(dbGroupMember);
                 _context.SaveChanges();
+                int groupId = editMember.Groups;
+                return GroupDetails(groupId);
             }
-            return RedirectToAction("GroupDetails");
+            return GroupDetails(editMember.Groups);
         }
 
-        
+        [HttpGet]
         public IActionResult GroupDetails(int groupId)
         {
             List<GroupMembers> members = _context.GroupMembers.Where(x => x.Groups == groupId).ToList();
-            if (members.Count > 0)
-            {
-                return View(members);
-            }
-            else
-            {
-                return RedirectToAction("Groups");
-            }
-            
+            return View(members);
         }
+
+
 
         public IActionResult RemoveGroup(int groupId)
         {
@@ -358,49 +396,18 @@ namespace NotiflyV0._1.Controllers
         }
 
         [HttpPost]
-        public IActionResult AddMember(GroupMembers newMember, int groupId)
+        public IActionResult AddMember(GroupMembers newMember)
         {
             if (ModelState.IsValid)
             {
                 _context.Add(newMember);
                 _context.SaveChanges();
-                return RedirectToAction("GroupDetails", new { groupId });
+                return RedirectToAction("Groups");
             }
             else
             {
                 return View();
             }
-        }
-
-        [HttpGet]
-        public IActionResult EditEvent(int EventId)
-        {
-            EventTable findEvent = _context.EventTable.Find(EventId);
-            if (findEvent != null)
-            {
-                return View(findEvent);
-            }
-            return View();
-        }
-
-        [HttpPost]
-        public IActionResult EditEvent(EventTable updatedEvent)
-        {
-            EventTable dbEvent = _context.EventTable.Find(updatedEvent.EventId);
-            if (ModelState.IsValid)
-            {
-                dbEvent.EventName = updatedEvent.EventName;
-                dbEvent.EventDescription = updatedEvent.EventDescription;
-                dbEvent.GroupName = updatedEvent.GroupName;
-                dbEvent.DateAndTime = updatedEvent.DateAndTime;
-                dbEvent.Venue = updatedEvent.Venue;
-                dbEvent.VenueLocation = updatedEvent.VenueLocation;
-
-                _context.Entry(dbEvent).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-                _context.Update(dbEvent);
-                _context.SaveChanges();
-            }
-            return View("Events");
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

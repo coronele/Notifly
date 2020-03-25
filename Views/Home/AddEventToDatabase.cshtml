@@ -1,0 +1,18 @@
+﻿
+@{
+    ViewData["Title"] = "Add New Event";
+}
+
+<h1>Add New Event</h1>
+
+<div>
+    <form action="../Home/AddEventToDatabase" method="post">
+        <label class="col-3">Event: </label><input type="text" name="eventname" value="" placeholder="Type event here"/>
+        <label class="col-3">Group Name: </label><input type="text" name="groupname" value="" placeholder="" />
+        <label class="col-3">Date/Time: </label><input type="datetime" name="dateandtime" value="" />
+        <label class="col-3">Location/Venue: </label><input type="text" name="venue" value="" />
+        <label class="col-3">Area (City,ST or ZIP): </label><input type="text" name="venuelocation" value="" />
+        <input class="btn btn-success" type="submit" value="Submit" />
+    </form>
+</div>
+
