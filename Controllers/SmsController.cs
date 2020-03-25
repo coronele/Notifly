@@ -26,7 +26,10 @@ namespace Twillo_Test.Controllers
         private readonly NotiflyDbContext _context;
 
 
+        public SmsController()
+        {
 
+        }
         public SmsController(IConfiguration configuration, NotiflyDbContext context)
         {
             TwilioAccountSid = configuration.GetSection("APIKeys")["TwilioAccountSid"];
@@ -238,13 +241,12 @@ namespace Twillo_Test.Controllers
                 List<GroupMembers> groupMembers = _context.GroupMembers.Where(x => x.Groups == group.GroupId).ToList();
                 EventTable tempEvent = _context.EventTable.Where(x => x.EventName == eventName).Where(x => x.GroupId == group.GroupId).First();
 
-                if (user != null)
+                
+                foreach (var g in groupMembers)
                 {
-                    foreach (var g in groupMembers)
-                    {
-                        SendText($"Hi, {g.MemberName}! {userInfo.FirstName} just invited you to {eventName} on {eventDateTime.ToString()}  at {eventVenue}, {eventLoc}. Respond with 'yes {tempEvent.EventId}' if you accept, and 'no {tempEvent.EventId}' if you decline.", g.PhoneNumber);
-                    }
+                    SendText($"Hi, {g.MemberName}! {userInfo.FirstName} just invited you to {eventName} on {eventDateTime.ToShortDateString()}  at {eventVenue}, {eventLoc}. Respond with 'yes {tempEvent.EventId}' if you accept, and 'no {tempEvent.EventId}' if you decline.", g.PhoneNumber);
                 }
+                
 
                 SendSuccessText(incomingMessage, $"You just created the event {eventName}! Reminders to everyone in {group.GroupName} are on the way.");
             }
@@ -280,12 +282,12 @@ namespace Twillo_Test.Controllers
         {
             TwilioClient.Init(TwilioAccountSid, TwilioAuthToken);
 
-            var messageOptions = new CreateMessageOptions(
-            new PhoneNumber(number));
-            messageOptions.From = new PhoneNumber("+19854413010");
-            messageOptions.Body = body;
-            var message = MessageResource.Create(messageOptions);
-
+            
+                var messageOptions = new CreateMessageOptions(
+                new PhoneNumber(number));
+                messageOptions.From = new PhoneNumber("+19854413010");
+                messageOptions.Body = body;
+                var message = MessageResource.Create(messageOptions);
         }
 
         public void SendReminder(SmsRequest incomingMessage, string userNumberString)
@@ -457,9 +459,6 @@ namespace Twillo_Test.Controllers
                 }
 
             }
-
-
-
 
         }
 

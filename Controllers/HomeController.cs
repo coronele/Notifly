@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Twillo_Test.Controllers;
 
 namespace NotiflyV0._1.Controllers
 {
@@ -17,6 +18,8 @@ namespace NotiflyV0._1.Controllers
     {
         private readonly NotiflyDbContext _context;
         private readonly string YelpKey;
+
+        
 
         public HomeController(NotiflyDbContext context, IConfiguration configuration)
         {
@@ -106,6 +109,8 @@ namespace NotiflyV0._1.Controllers
                 _context.MemberRsvp.Remove(r);
                 _context.SaveChanges();
             }
+
+            
 
             _context.EventTable.Remove(foundEvent);
             _context.SaveChanges();
@@ -246,12 +251,12 @@ namespace NotiflyV0._1.Controllers
 
 
 
-        public IActionResult RemoveMember(int id)
+        public IActionResult RemoveMember(int memberId)
         {
             //In the ListGroups View, plan is to create a details button that will display the list
             //of members participating in the group that was selected. 7
             //This way, you could remove any individuals off the list. 
-            Groups findMember = _context.Groups.Find(id);
+            Groups findMember = _context.Groups.Find(memberId);
 
             if (findMember != null)
             {
@@ -263,9 +268,9 @@ namespace NotiflyV0._1.Controllers
         }
 
         [HttpGet]
-        public IActionResult EditMember(int memberid)
+        public IActionResult EditMember(int memberId)
         {
-            GroupMembers findMember = _context.GroupMembers.Find(memberid);
+            GroupMembers findMember = _context.GroupMembers.Find(memberId);
             if (findMember != null)
             {
                 return View(findMember);
@@ -288,6 +293,10 @@ namespace NotiflyV0._1.Controllers
                 _context.SaveChanges();
             }
             return RedirectToAction("GroupDetails");
+
+
+            
+
         }
 
         [HttpGet]
@@ -328,6 +337,9 @@ namespace NotiflyV0._1.Controllers
                 _context.Groups.Remove(foundGroup);
                 _context.SaveChanges();
             }
+
+            SmsController sms = new SmsController();
+            
 
             return RedirectToAction("Groups");
         }
