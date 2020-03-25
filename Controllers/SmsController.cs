@@ -24,6 +24,10 @@ namespace Twillo_Test.Controllers
         private readonly string TwilioAccountSid;
         private readonly string TwilioAuthToken;
         private readonly NotiflyDbContext _context;
+        public SmsController()
+        {
+
+        }
 
 
 

@@ -7,14 +7,17 @@
 
 <h1>Event Details</h1>
 
-<B>** Viewbag test area **</B>
-<h3>@ViewBag.thisEvent.EventName</h3>
+<div>
+    <h3>@ViewBag.thisEvent.EventName</h3>
+</div>
+<div>
+    <p>
+        @ViewBag.thisEvent.Venue in @ViewBag.thisEvent.VenueLocation
+        on @ViewBag.thisEvent.DateAndTime.ToString()
+    </p>
+</div>
 <br />
-@ViewBag.thisEvent.EventDescription
-<br />
-@ViewBag.thisEvent.Venue in @ViewBag.thisEvent.VenueLocation
-<br />
-on @ViewBag.thisEvent.DateAndTime
+
 
 @if (Model.name == null)
 {
@@ -22,7 +25,7 @@ on @ViewBag.thisEvent.DateAndTime
 }
 else if ((Model.name.Trim().ToLower().Contains(ViewBag.thisEvent.Venue.Trim().ToLower())) && (Model.name != null))
 {
-    <h2>at @Model.name</h2>
+    <h2>Venue info: @Model.name</h2>
     <table class="table">
         <tr>
             <th>
@@ -51,7 +54,7 @@ else if ((Model.name.Trim().ToLower().Contains(ViewBag.thisEvent.Venue.Trim().To
         </tr>
         <tr>
             <td colspan="2">
-                <img src="@Model.photos.First()" width="480" />
+                <img src="@Model.photos.First()" height="480" />
             </td>
         </tr>
     </table>

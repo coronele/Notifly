@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Twillo_Test.Controllers;
 
 namespace NotiflyV0._1.Controllers
 {
@@ -17,6 +18,8 @@ namespace NotiflyV0._1.Controllers
     {
         private readonly NotiflyDbContext _context;
         private readonly string YelpKey;
+
+        SmsController smsController = new SmsController();
 
         public HomeController(NotiflyDbContext context, IConfiguration configuration)
         {
@@ -133,17 +136,56 @@ namespace NotiflyV0._1.Controllers
             }
         }
 
-        //public IActionResult CreateEvent()
-        //{
-        //    return View();
-        //}
+        [HttpGet]
+        public IActionResult AddEventToDatabase()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult AddEventToDatabase(EventTable newEvent)
+        {
+            newEvent.UserId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+            List<EventTable> eventList = _context.EventTable.Where(x => x.UserId == newEvent.UserId).ToList();
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    List<Groups> groupList = _context.Groups.Where(x => x.UserId == newEvent.UserId).ToList();
+                    bool groupMatch = false;
+
+                    for (int i = 0; i < groupList.Count; i++)
+                    {
+                        if (groupList[i].GroupName == newEvent.GroupName)
+                        {
+                            groupMatch = true;
+                            newEvent.GroupId = groupList[i].GroupId;
+                            break;
+                        }
+                    }
+                    if (groupMatch == false)
+                    {
+                        throw new Exception("Invalid group name");
+                    }
+
+                    _context.EventTable.Add(newEvent);
+                    _context.SaveChanges();
 
 
-        //public IActionResult CreateEvent()
-        //{
+                    return View();
+                }
+                else
+                {
+                    return View();
+                }
+            }
+            catch
+            {
+                return View();
+            }
 
-
-        //}
+        }
 
         public IActionResult Groups()
         {
@@ -240,20 +282,20 @@ namespace NotiflyV0._1.Controllers
 
 
 
-        public IActionResult RemoveMember(int id)
+        public IActionResult RemoveMember(int memberId)
         {
             //In the ListGroups View, plan is to create a details button that will display the list
             //of members participating in the group that was selected. 7
             //This way, you could remove any individuals off the list. 
-            Groups findMember = _context.Groups.Find(id);
+            GroupMembers findMember = _context.GroupMembers.Find(memberId);
 
             if (findMember != null)
             {
-                _context.Groups.Remove(findMember);
+                _context.GroupMembers.Remove(findMember);
                 _context.SaveChanges();
             }
 
-            return RedirectToAction("Groups");
+            return RedirectToAction("GroupDetails");
         }
 
         [HttpGet]
@@ -280,15 +322,17 @@ namespace NotiflyV0._1.Controllers
                 _context.Entry(dbGroupMember).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
                 _context.Update(dbGroupMember);
                 _context.SaveChanges();
+                int groupId = editMember.Groups;
+                return GroupDetails(groupId);
             }
-            return RedirectToAction("GroupDetails");
+            return GroupDetails(editMember.Groups);
         }
 
         [HttpGet]
         public IActionResult GroupDetails(int groupId)
         {
-                List<GroupMembers> members = _context.GroupMembers.Where(x => x.Groups == groupId).ToList();
-                return View(members);
+            List<GroupMembers> members = _context.GroupMembers.Where(x => x.Groups == groupId).ToList();
+            return View(members);
         }
 
 
