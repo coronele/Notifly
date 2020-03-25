@@ -1,0 +1,18 @@
+﻿
+@{
+    ViewData["Title"] = "EditEvent";
+}
+@model EventTable
+<h1>Edit Your Event</h1>
+
+<form action="../Home/EditEvent" method="post">
+    <input type="hidden" name="EventId" value="@Model.EventId" />
+    <input type="text" name="EventName" value="@Model.EventName" />
+    <input type="text" name="EventDescription" value="@Model.EventDescription" />
+    <input type="text" name="GroupName" value="@Model.GroupName" />
+    <input type="datetime" name="DateAndTime" value="@Model.DateAndTime" />
+    <input type="text" name="Venue" value="@Model.Venue" />
+    <input type="text" name="VenueLocation" value="@Model.VenueLocation" />
+    <input type="submit" name="Edit Event" value="" />
+</form>
+
