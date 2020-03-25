@@ -27,10 +27,11 @@ namespace NotiflyV0._1.Controllers
         public IActionResult Index()
         {
 
-            string id = User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
             try
             {
+                string id = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+
                 UserInfo userInfo = _context.UserInfo.Where(x => x.UserId == id).First();
                 if (userInfo == null)
                 {
@@ -379,11 +380,13 @@ namespace NotiflyV0._1.Controllers
             }
         }
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
+
+        
+
+
+
+
+        
 
 
 

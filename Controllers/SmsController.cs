@@ -179,7 +179,7 @@ namespace Twillo_Test.Controllers
                     line = reader.ReadLine();
                 }
 
-                string userEvent = textParts[0];
+                string eventName = textParts[0];
 
                 //Date Time Format: ("MM/dd/yyyy h:mm tt") (05/29/2015 5:50 AM)
 
@@ -199,8 +199,11 @@ namespace Twillo_Test.Controllers
                     groupNames.Add(u.GroupName);
                 }
 
+                TimeZoneInfo myTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+                DateTime currentDateTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, myTimeZone);
+
                 //exception handling!
-                if (eventDateTime < DateTime.Now)
+                if (eventDateTime.CompareTo(currentDateTime) < 1)
                 {
 
                     badDate = true;
@@ -225,7 +228,7 @@ namespace Twillo_Test.Controllers
 
 
 
-                EventTable newEvent = new EventTable(userEvent, "Description", group.GroupId, eventDateTime, eventVenue, eventLoc, user.Id, group.GroupName, eventDateTime);
+                EventTable newEvent = new EventTable(eventName, "Description", group.GroupId, eventDateTime, eventVenue, eventLoc, user.Id, group.GroupName, eventDateTime);
 
                 _context.EventTable.Add(newEvent);
                 _context.SaveChanges();
@@ -233,15 +236,17 @@ namespace Twillo_Test.Controllers
                 //Code for sending group text
 
                 List<GroupMembers> groupMembers = _context.GroupMembers.Where(x => x.Groups == group.GroupId).ToList();
-                EventTable tempEvent = _context.EventTable.Where(x => x.EventName == userEvent).Where(x => x.GroupId == group.GroupId).First();
+                EventTable tempEvent = _context.EventTable.Where(x => x.EventName == eventName).Where(x => x.GroupId == group.GroupId).First();
 
                 if (user != null)
                 {
                     foreach (var g in groupMembers)
                     {
-                        SendText($"Hi, {g.MemberName}! {userInfo.FirstName} just invited you to {userEvent} on {eventDateTime.ToString()}  at {eventVenue}, {eventLoc}. Respond with 'yes {tempEvent.EventId}' if you accept, and 'no {tempEvent.EventId}' if you decline.", g.PhoneNumber);
+                        SendText($"Hi, {g.MemberName}! {userInfo.FirstName} just invited you to {eventName} on {eventDateTime.ToString()}  at {eventVenue}, {eventLoc}. Respond with 'yes {tempEvent.EventId}' if you accept, and 'no {tempEvent.EventId}' if you decline.", g.PhoneNumber);
                     }
                 }
+
+                SendSuccessText(incomingMessage, $"You just created the event {eventName}! Reminders to everyone in {group.GroupName} are on the way.");
             }
             catch (Exception)
             {
@@ -309,7 +314,8 @@ namespace Twillo_Test.Controllers
                     throw new Exception();
                 }
 
-                AspNetUsers user = _context.AspNetUsers.Where(x => x.PhoneNumber == incomingMessage.From).First();
+                
+                AspNetUsers user = _context.AspNetUsers.Where(x => x.Id == userInfo.UserId).First();
 
                 List<EventTable> userEvents = _context.EventTable.Where(x => x.UserId == user.Id).ToList();
 
@@ -368,11 +374,14 @@ namespace Twillo_Test.Controllers
 
 
                 List<GroupMembers> eventMembers = _context.GroupMembers.Where(x => x.Groups == userEvent.GroupId).ToList();
+                Groups group = _context.Groups.Where(x => x.GroupId == userEvent.GroupId).First();
 
                 foreach (var e in eventMembers)
                 {
                     SendText($"Hey, {e.MemberName}! Just a reminder from {userInfo.FirstName} You have {timeLeft} until {userEvent.EventName}. Are you still coming? You can still RSVP by texting back with 'yes {userEvent.EventId}' or 'no {userEvent.EventId}'", e.PhoneNumber);
                 }
+
+                SendSuccessText(incomingMessage, $"You just sent out reminders to everyone in {group.GroupName}");
             }
             catch (Exception)
             {
@@ -507,6 +516,8 @@ namespace Twillo_Test.Controllers
                     _context.SaveChanges();
                 }
 
+                SendSuccessText(incomingMessage, $"You created the group '{textParts[1]}'");
+
             }
             catch (Exception)
             {
@@ -520,8 +531,9 @@ namespace Twillo_Test.Controllers
 
         public void SendListOfEvents(SmsRequest incomingMessage)
         {
-            var user = _context.AspNetUsers.Where(x => x.PhoneNumber == incomingMessage.From).First();
-            UserInfo userInfo = _context.UserInfo.Where(x => x.UserId == user.Id).First();
+            UserInfo userInfo = _context.UserInfo.Where(x => x.PhoneNumber == incomingMessage.From).First();
+            var user = _context.AspNetUsers.Where(x => x.Id == userInfo.UserId).First();
+
             List<EventTable> userEvents = _context.EventTable.Where(x => x.UserId == user.Id).ToList();
             string reminderBody = $"These are your events, {userInfo.FirstName}. If you want to send out reminders, reply to this text with the letter r and the number of the event (ex. 'r 12'). \n";
 
@@ -553,5 +565,37 @@ namespace Twillo_Test.Controllers
         {
             SendText("Looks like you don't have an account with us. \nIn order to create events or groups, please sign up at www.notifly.azurewebsites.net \n Have a nice day!", incomingMessage.From);
         }
+
+        public void SendSuccessText(SmsRequest incomingMessage, string successStory)
+        {
+            try
+            {
+                UserInfo userInfo = _context.UserInfo.Where(x => x.PhoneNumber == incomingMessage.From).First();
+                if(userInfo == null)
+                {
+                    throw new Exception();
+                }
+                SendText($"Congrats, {userInfo.FirstName}! {successStory}", incomingMessage.From);
+
+            }
+            catch (Exception)
+            {
+                SendText($"Success! {successStory}", incomingMessage.From);
+            }
+            
+            
+        }
+
+
+
+
+
     }
+
+
+    
+
+   
+
+
 }

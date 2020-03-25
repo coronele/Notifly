@@ -8,7 +8,7 @@
     {
 
         <div class="alert alert-success" role="alert">
-            <strong>Success!</strong> You just added @ViewBag.GroupMembers[counter1 - 1].MemberName (@ViewBag.GroupMembers[counter1 - 1].PhoneNumber) to your group!
+            <h4 class="alert-heading">Success!</h4> You just added @ViewBag.GroupMembers[counter1 - 1].MemberName (@ViewBag.GroupMembers[counter1 - 1].PhoneNumber) to your group!
         </div>
     }
 
@@ -18,12 +18,12 @@
 
 <br />
 <br />
-<h1>Add a Member to your Group!</h1>
+<h1 class="text-light">Add a Member to your Group!</h1>
 <br />
 <br />
 <form action="../Home/CreateGroupMember" method="post">
     <input type="text" name="memberName" value="" placeholder="Member Name " required/>
-    <input type="text" name="phoneNumber" value="" placeholder="+11234561790" required/>
+    <input type="text" name="phoneNumber" value="" placeholder="+11234561790" pattern="(\+1\d{10})" required/>
     <input type="hidden" name="groupId" value="@ViewBag.GroupId" />
     <input type="hidden" name="counter" value="@counter" />
     <br />
