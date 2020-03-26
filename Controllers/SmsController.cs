@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -26,7 +27,7 @@ namespace Twillo_Test.Controllers
         private readonly NotiflyDbContext _context;
 
 
-        
+
 
         public SmsController(IConfiguration configuration, NotiflyDbContext context)
         {
@@ -47,7 +48,7 @@ namespace Twillo_Test.Controllers
 
             }
 
-            else if (incomingMessage.Body == "?" || incomingMessage.Body.ToLower().ToCharArray()[0] == 'h')
+            else if (incomingMessage.Body == "?" || incomingMessage.Body.ToLower() == "h" || messageParts[0] == "h")
             {
                 if (messageParts.Length == 1)
                 {
@@ -73,7 +74,7 @@ namespace Twillo_Test.Controllers
             {
                 CreateGroup(incomingMessage);
             }
-            
+
             else
             {
                 AddEventToDatabase(incomingMessage);
@@ -239,12 +240,12 @@ namespace Twillo_Test.Controllers
                 List<GroupMembers> groupMembers = _context.GroupMembers.Where(x => x.Groups == group.GroupId).ToList();
                 EventTable tempEvent = _context.EventTable.Where(x => x.EventName == eventName).Where(x => x.GroupId == group.GroupId).First();
 
-                
+
                 foreach (var g in groupMembers)
                 {
                     SendText($"Hi, {g.MemberName}! {userInfo.FirstName} just invited you to {eventName} on {eventDateTime.ToShortDateString()}  at {eventVenue}, {eventLoc}. Respond with 'yes {tempEvent.EventId}' if you accept, and 'no {tempEvent.EventId}' if you decline.", g.PhoneNumber);
                 }
-                
+
 
                 SendSuccessText(incomingMessage, $"You just created the event {eventName}! Reminders to everyone in {group.GroupName} are on the way.");
             }
@@ -280,12 +281,12 @@ namespace Twillo_Test.Controllers
         {
             TwilioClient.Init(TwilioAccountSid, TwilioAuthToken);
 
-            
-                var messageOptions = new CreateMessageOptions(
-                new PhoneNumber(number));
-                messageOptions.From = new PhoneNumber("+19854413010");
-                messageOptions.Body = body;
-                var message = MessageResource.Create(messageOptions);
+
+            var messageOptions = new CreateMessageOptions(
+            new PhoneNumber(number));
+            messageOptions.From = new PhoneNumber("+19854413010");
+            messageOptions.Body = body;
+            var message = MessageResource.Create(messageOptions);
         }
 
 
@@ -328,7 +329,7 @@ namespace Twillo_Test.Controllers
                     throw new Exception();
                 }
 
-                
+
                 AspNetUsers user = _context.AspNetUsers.Where(x => x.Id == userInfo.UserId).First();
 
                 List<EventTable> userEvents = _context.EventTable.Where(x => x.UserId == user.Id).ToList();
@@ -440,7 +441,7 @@ namespace Twillo_Test.Controllers
                 else if (helpNumber == 1)
                 {
                     SendText("Ready to start Notiflying? To get started, you first need to sign up. Just go to notifly.azurewebsites.net. Once you're registered, you can do everything right from your phone's messaging app. Text back 'h' or '?' to see the help menu again.", incomingMessage.From);
-                    
+
                 }
                 else if (helpNumber == 2)
                 {
@@ -448,7 +449,7 @@ namespace Twillo_Test.Controllers
                 }
                 else if (helpNumber == 3)
                 {
-                    
+
                     SendText("To create an event, be sure to first make a group. Then, once you're ready, you need to have this format. Be sure to have everything on a new line and have the same date format as listed. \nEvent Name \nEvent Date (ex. 05/29/2020 4:40 PM) \nEvent Venue (ex. Denny's) \nEvent Location (ex. 'Detroit, MI' or '48127') \nThe Group Name", incomingMessage.From);
                 }
                 else if (helpNumber == 4)
@@ -489,7 +490,7 @@ namespace Twillo_Test.Controllers
                 var user = _context.AspNetUsers.Where(x => x.Id == userInfo.UserId).First();
                 if (userInfo == null)
                 {
-                    
+
                     unknownUser = true;
                     throw new Exception();
                 }
@@ -584,7 +585,7 @@ namespace Twillo_Test.Controllers
             try
             {
                 UserInfo userInfo = _context.UserInfo.Where(x => x.PhoneNumber == incomingMessage.From).First();
-                if(userInfo == null)
+                if (userInfo == null)
                 {
                     throw new Exception();
                 }
@@ -595,8 +596,8 @@ namespace Twillo_Test.Controllers
             {
                 SendText($"Success! {successStory}", incomingMessage.From);
             }
-            
-            
+
+
         }
 
 
@@ -606,9 +607,9 @@ namespace Twillo_Test.Controllers
     }
 
 
-    
 
-   
+
+
 
 
 }

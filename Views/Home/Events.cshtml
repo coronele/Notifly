@@ -15,7 +15,8 @@
         <th>Location</th>
         <th>Details</th>
         <th>Rsvp</th>
-        <th>Send Out Reminders</th>
+        <th>Text Reminders</th>
+        <th>Edit</th>
         <th>Delete</th>
     </tr>
     @foreach (var m in Model)
@@ -28,7 +29,8 @@
     <td>@m.VenueLocation</td>
     <td><button class="btn btn-outline-success" onclick="window.location.href='../Home/EventDetails?eventId=@m.EventId'">Details</button></td>
     <td><button class="btn btn-outline-success" onclick="window.location.href='../Home/CheckRsvp?groupId=@m.GroupId&eventId=@m.EventId'">RSVPs</button></td>
-    <td><button class="btn btn-warning btn-outline-danger" onclick="window.location.href='../Home/SendRemindersFromHome?eventId=@m.EventId'">✉</button></td>
+    <td><button class="btn btn-primary btn-outline-warning" onclick="window.location.href='../Home/SendRemindersFromHome?eventId=@m.EventId'">✉</button></td>
+    <td><button onclick="window.location.href = '../Home/EditEvent?eventId=@m.EventId'" type="button" class="btn btn-warning">📝</button></td>
     <td><button onclick="window.location.href = '../Home/DeleteEvent?eventId=@m.EventId'" type="button" class="btn btn-dark btn-outline-danger">🗑️</button></td>
 </tr>
     }
