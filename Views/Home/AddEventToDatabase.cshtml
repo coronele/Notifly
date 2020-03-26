@@ -3,16 +3,44 @@
     ViewData["Title"] = "Add New Event";
 }
 
+@{
+    if (ViewBag.ErrorMsg != null)
+    {
+
+        <div class="alert alert-danger" role="alert">
+            <h4 class="alert-heading">Error:</h4> @ViewBag.ErrorMsg
+        </div>
+    }
+}
+
+@model List<Groups>
+
 <h1>Add New Event</h1>
 
 <div>
-    <form action="../Home/AddEventToDatabase" method="post">
-        <label class="col-3">Event: </label><input type="text" name="eventname" value="" placeholder="Type event here"/>
-        <label class="col-3">Group Name: </label><input type="text" name="groupname" value="" placeholder="" />
-        <label class="col-3">Date/Time: </label><input type="datetime" name="dateandtime" value="" />
-        <label class="col-3">Location/Venue: </label><input type="text" name="venue" value="" />
-        <label class="col-3">Area (City,ST or ZIP): </label><input type="text" name="venuelocation" value="" />
-        <input class="btn btn-success" type="submit" value="Submit" />
+    <form action="../Home/AddEventToDatabase" method="post" class="form-control-lg">
+        <label class="col-3">Event: </label><input class="col-6" type="text" name="eventname" value="" placeholder="Type event here" required />
+        <label class="col-3">Group Name: </label>
+        <select name="groupid" class="col-6">
+            @foreach (var group in Model)
+            {
+                <option value=@group.GroupId>@group.GroupName</option>
+            }
+        </select>
+        <div>
+            <label class="col-3">Date:</label>
+            <input class="col-6" type="date" name="eventDate" value="" />
+        </div>
+        <div>
+            <label class="col-3">Time:</label>
+            <input class="col-6" type="time" name="eventTime" value="" />
+        </div>
+        <label class="col-3">Location/Venue: </label><input class="col-6" type="text" name="venue" value="" required />
+        <label class="col-3">Area (City,ST or ZIP): </label><input class="col-6" type="text" name="venuelocation" value="" required />
+        <div>
+            <input class="btn btn-success" type="submit" value="Submit" />
+        </div>
+
     </form>
 </div>
 

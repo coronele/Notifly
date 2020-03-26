@@ -24,16 +24,7 @@ namespace Twillo_Test.Controllers
         private readonly string TwilioAccountSid;
         private readonly string TwilioAuthToken;
         private readonly NotiflyDbContext _context;
-        public SmsController()
-        {
 
-        }
-
-
-        public SmsController()
-        {
-
-        }
         public SmsController(IConfiguration configuration, NotiflyDbContext context)
         {
             TwilioAccountSid = configuration.GetSection("APIKeys")["TwilioAccountSid"];

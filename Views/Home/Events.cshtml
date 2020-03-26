@@ -15,20 +15,23 @@
         <th>Location</th>
         <th>Details</th>
         <th>Rsvp</th>
+        <th>Edit</th>
+        <th>Delete</th>
     </tr>
     @foreach (var m in Model)
     {
         <tr class="bg-light text-dark">
-            <td>@m.EventName</td>
+            <td><b>@m.EventName</b></td>
             <td>@m.GroupName</td>
-            <td>@m.DateAndTime</td>
+            <td>@m.DateAndTime.ToString("ddd, MMM dd, yyyy hh:mm tt")</td>
             <td>@m.Venue</td>
             <td>@m.VenueLocation</td>
             <td><button class="btn btn-outline-success" onclick="window.location.href='../Home/EventDetails?eventId=@m.EventId'">Details</button></td>
             <td><button class="btn btn-outline-success" onclick="window.location.href='../Home/CheckRsvp?groupId=@m.GroupId&eventId=@m.EventId'">RSVPs</button></td>
+            <td><button onclick="window.location.href = '../Home/EditEvent?eventId=@m.EventId'" type="button" class="btn btn-dark btn-outline-info">📝</button></td>
+            <td><button onclick="window.location.href = '../Home/DeleteEvent?eventId=@m.EventId'" type="button" class="btn btn-dark btn-outline-danger">🗑️</button></td>
         </tr>
     }
-
 </table>
 <td><button class="btn btn-outline-light" onclick="window.location.href='../Home/AddEventToDatabase'">Create New Event</button></td>
 

@@ -1,18 +1,54 @@
 ﻿
 @{
-    ViewData["Title"] = "EditEvent";
+    ViewData["Title"] = "Edit Event";
 }
+
+@{
+    if (ViewBag.ErrorMsg != null)
+    {
+
+        <div class="alert alert-danger" role="alert">
+            <h4 class="alert-heading">Error:</h4> @ViewBag.ErrorMsg
+        </div>
+    }
+}
+
 @model EventTable
 <h1>Edit Your Event</h1>
 
-<form action="../Home/EditEvent" method="post">
-    <input type="hidden" name="EventId" value="@Model.EventId" />
-    <input type="text" name="EventName" value="@Model.EventName" />
-    <input type="text" name="EventDescription" value="@Model.EventDescription" />
-    <input type="text" name="GroupName" value="@Model.GroupName" />
-    <input type="datetime" name="DateAndTime" value="@Model.DateAndTime" />
-    <input type="text" name="Venue" value="@Model.Venue" />
-    <input type="text" name="VenueLocation" value="@Model.VenueLocation" />
-    <input type="submit" name="Edit Event" value="" />
-</form>
+<div>
+    <form action="../Home/EditEvent" method="post" class="form-control-lg">
+        <input type="hidden" name="EventId" value="@Model.EventId" />
+        <input type="hidden" name="userid" value="@Model.UserId" />
+        <label class="col-3">Event: </label><input class="col-6" type="text" name="eventname" value="@Model.EventName" required />
+        <label class="col-3">Group Name: </label>
+        <select name="groupid" class="col-6">
+            @foreach (var group in ViewBag.groupList)
+            {
+                @if (group.GroupId == Model.GroupId)
+                {
+                    <option value=@group.GroupId selected>@group.GroupName</option>
+                }
+                else
+                {
+                    <option value=@group.GroupId>@group.GroupName</option>
+                }
 
+            }
+        </select>
+        <div>
+            <label class="col-3">Date:</label>
+            <input class="col-6" type="date" name="eventDate" value="@Model.DateAndTime.Date.ToString("yyyy-MM-dd")" />
+        </div>
+        <div>
+            <label class="col-3">Time:</label>
+            <input class="col-6" type="time" name="eventTime" value="@Model.DateAndTime.TimeOfDay" />
+        </div>
+        <label class="col-3">Location/Venue: </label><input class="col-6" type="text" name="venue" value="@Model.Venue" required />
+        <label class="col-3">Area (City,ST or ZIP): </label><input class="col-6" type="text" name="venuelocation" value="@Model.VenueLocation" required />
+        <div>
+            <input class="btn btn-success" type="submit" value="Submit" />
+        </div>
+
+    </form>
+</div>
