@@ -1,6 +1,11 @@
 ﻿
 @{
     ViewData["Title"] = "EventDetails";
+    
+    
+    
+
+
 }
 
 @model YelpDetailObject
@@ -56,6 +61,7 @@ else if ((Model.name.Trim().ToLower().Contains(ViewBag.thisEvent.Venue.Trim().To
             <td colspan="2">
                 <img src="@Model.photos.First()" height="480" />
             </td>
+            
         </tr>
     </table>
 }
@@ -63,3 +69,4 @@ else
 {
     <h2>at @ViewBag.thisEvent.Venue</h2>
 }
+

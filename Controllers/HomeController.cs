@@ -18,14 +18,22 @@ namespace NotiflyV0._1.Controllers
     {
         private readonly NotiflyDbContext _context;
         private readonly string YelpKey;
+        private readonly string TwilioAccountSid;
+        private readonly string TwilioAuthToken;
 
-        SmsController smsController = new SmsController();
+        
+
 
         public HomeController(NotiflyDbContext context, IConfiguration configuration)
         {
             _context = context;
             YelpKey = configuration.GetSection("APIKeys")["Yelp"];
+            TwilioAccountSid = configuration.GetSection("APIKeys")["TwilioAccountSid"];
+            TwilioAuthToken = configuration.GetSection("APIKeys")["TwilioAuthToken"];
+
         }
+
+        
 
         public IActionResult Index()
         {
@@ -41,6 +49,8 @@ namespace NotiflyV0._1.Controllers
                 }
                 else
                 {
+                    //SmsController.SendTextInHome(TwilioAccountSid, TwilioAuthToken, "Hey Erwin", "+");
+
                     return View();
                 }
 
@@ -94,46 +104,117 @@ namespace NotiflyV0._1.Controllers
                 return RedirectToAction("AddUserInfo");
             }
 
-
-
         }
 
-        public IActionResult DeleteEvent(int id)
+        public IActionResult DeleteEvent(int eventId)
         {
             //Created a button in the Events View to use this function. 
-            EventTable find = _context.EventTable.Find(id);
-            if (find != null)
+            EventTable foundEvent = _context.EventTable.Find(eventId);
+            List<MemberRsvp> rsvps = _context.MemberRsvp.Where(x => x.EventId == foundEvent.EventId).ToList();
+
+            foreach (var r in rsvps)
             {
-                _context.Remove(find);
+                _context.MemberRsvp.Remove(r);
                 _context.SaveChanges();
             }
+
+
+            _context.Remove(foundEvent);
+            _context.SaveChanges();
+
             return RedirectToAction("Events");
         }
 
+
+
         public async Task<IActionResult> EventDetails(int eventId)
         {
-            var client = new HttpClient();
-            client.BaseAddress = new Uri("https://api.yelp.com/v3/businesses/");
-            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {YelpKey}");
+            
+            
+
+
+                var client = new HttpClient();
+                client.BaseAddress = new Uri("https://api.yelp.com/v3/businesses/");
+                client.DefaultRequestHeaders.Add("Authorization", $"Bearer {YelpKey}");
+
+                EventTable foundEvent = _context.EventTable.Where(x => x.EventId == eventId).First();
+
+                var searchResponse = await client.GetAsync($"search?term={foundEvent.Venue}&location={foundEvent.VenueLocation}&sortby=best_match");
+                var foundLocation = await searchResponse.Content.ReadAsAsync<YelpSearchObject>();
+
+                ViewBag.thisEvent = foundEvent;
+                ViewBag.EventId = foundEvent.EventId;
+
+                if ((foundLocation == null) || (foundLocation.total == 0))
+                {
+                    YelpDetailObject ydo = new YelpDetailObject();
+                    return View(ydo);
+                }
+                else
+                {
+                    var searchDetailResponse = await client.GetAsync($"{foundLocation.businesses.First().id}");
+                    var foundDetails = await searchDetailResponse.Content.ReadAsAsync<YelpDetailObject>();
+                    return View(foundDetails);
+                }
+            
+        }
+
+        
+        public IActionResult SendRemindersFromHome(int eventId)
+        {
+            string userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+            UserInfo userInfo = _context.UserInfo.Where(x => x.UserId == userId).First();
 
             EventTable foundEvent = _context.EventTable.Where(x => x.EventId == eventId).First();
 
-            var searchResponse = await client.GetAsync($"search?term={foundEvent.Venue}&location={foundEvent.VenueLocation}&sortby=best_match");
-            var foundLocation = await searchResponse.Content.ReadAsAsync<YelpSearchObject>();
+            Groups group = _context.Groups.Where(x => x.GroupId == foundEvent.GroupId).First();
 
-            ViewBag.thisEvent = foundEvent;
+            List<GroupMembers> members = _context.GroupMembers.Where(x => x.Groups == group.GroupId).ToList();
 
-            if ((foundLocation == null) || (foundLocation.total == 0))
+            TimeZoneInfo myTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+            DateTime currentDateTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, myTimeZone);
+
+            TimeSpan timeRemainingForEvent = foundEvent.DateAndTime.Subtract(currentDateTime);
+            string timeLeft;
+            if (timeRemainingForEvent.TotalDays < 1)
             {
-                YelpDetailObject ydo = new YelpDetailObject();
-                return View(ydo);
+                if (timeRemainingForEvent.Hours > 1)
+                {
+                    timeLeft = timeRemainingForEvent.Hours.ToString();
+                    timeLeft = timeLeft + " hours";
+                }
+                else
+                {
+                    timeLeft = timeRemainingForEvent.Hours.ToString();
+                    timeLeft = timeLeft + " hour";
+                }
+
             }
             else
             {
-                var searchDetailResponse = await client.GetAsync($"{foundLocation.businesses.First().id}");
-                var foundDetails = await searchDetailResponse.Content.ReadAsAsync<YelpDetailObject>();
-                return View(foundDetails);
+                if (timeRemainingForEvent.Days > 1)
+                {
+                    timeLeft = timeRemainingForEvent.Days.ToString();
+                    timeLeft = timeLeft + " days";
+                }
+                else
+                {
+                    timeLeft = timeRemainingForEvent.Days.ToString();
+                    timeLeft = timeLeft + " day";
+                }
+
             }
+
+
+            foreach (var m in members)
+            {
+                SmsController.SendTextInHome(TwilioAccountSid, TwilioAuthToken, $"Hey, {m.MemberName}! Just a reminder from {userInfo.FirstName} You have {timeLeft} until {foundEvent.EventName}. Are you still coming? You can still RSVP by texting back with 'yes {foundEvent.EventId}' or 'no {foundEvent.EventId}'", m.PhoneNumber);
+
+            }
+
+
+            return RedirectToAction("Events");
         }
 
         [HttpGet]
@@ -145,7 +226,13 @@ namespace NotiflyV0._1.Controllers
         [HttpPost]
         public IActionResult AddEventToDatabase(EventTable newEvent)
         {
-            newEvent.UserId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            string userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            newEvent.UserId = userId;
+
+            UserInfo userInfo = _context.UserInfo.Where(x => x.UserId == userId).First();
+
+
+
 
             List<EventTable> eventList = _context.EventTable.Where(x => x.UserId == newEvent.UserId).ToList();
             try
@@ -171,6 +258,16 @@ namespace NotiflyV0._1.Controllers
 
                     _context.EventTable.Add(newEvent);
                     _context.SaveChanges();
+
+
+
+                    List<GroupMembers> members = _context.GroupMembers.Where(x => x.Groups == newEvent.GroupId).ToList();
+
+                    foreach(var m in members)
+                    {
+                        SmsController.SendTextInHome(TwilioAccountSid, TwilioAuthToken, $"Hi, {m.MemberName}! {userInfo.FirstName} just invited you to {newEvent.EventName} on {newEvent.DateAndTime.ToShortDateString()}  at {newEvent.Venue}, {newEvent.VenueLocation}. Respond with 'yes {newEvent.EventId}' if you accept, and 'no {newEvent.EventId}' if you decline.", m.PhoneNumber);
+                    }
+
 
 
                     return View();
