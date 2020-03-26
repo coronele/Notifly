@@ -15,12 +15,12 @@
 
 @model List<Groups>
 
-<h1>Add New Event</h1>
+<h1 class="text-light">Add New Event</h1>
 
 <div>
     <form action="../Home/AddEventToDatabase" method="post" class="form-control-lg">
-        <label class="col-3">Event: </label><input class="col-6" type="text" name="eventname" value="" placeholder="Type event here" required />
-        <label class="col-3">Group Name: </label>
+        <label class="col-3 text-light">Event: </label><input class="col-6" type="text" name="eventname" value="" placeholder="Type event here" required />
+        <label class="col-3 text-light">Group Name: </label>
         <select name="groupid" class="col-6">
             @foreach (var group in Model)
             {
@@ -28,15 +28,15 @@
             }
         </select>
         <div>
-            <label class="col-3">Date:</label>
+            <label class="col-3 text-light">Date:</label>
             <input class="col-6" type="date" name="eventDate" value="" />
         </div>
         <div>
-            <label class="col-3">Time:</label>
+            <label class="col-3 text-light">Time:</label>
             <input class="col-6" type="time" name="eventTime" value="" />
         </div>
-        <label class="col-3">Location/Venue: </label><input class="col-6" type="text" name="venue" value="" required />
-        <label class="col-3">Area (City,ST or ZIP): </label><input class="col-6" type="text" name="venuelocation" value="" required />
+        <label class="col-3 text-light">Location/Venue: </label><input class="col-6" type="text" name="venue" value="" required />
+        <label class="col-3 text-light">Area (City,ST or ZIP): </label><input class="col-6" type="text" name="venuelocation" value="" required />
         <div>
             <input class="btn btn-success" type="submit" value="Submit" />
         </div>

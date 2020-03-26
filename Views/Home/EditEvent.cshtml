@@ -20,8 +20,8 @@
     <form action="../Home/EditEvent" method="post" class="form-control-lg">
         <input type="hidden" name="EventId" value="@Model.EventId" />
         <input type="hidden" name="userid" value="@Model.UserId" />
-        <label class="col-3">Event: </label><input class="col-6" type="text" name="eventname" value="@Model.EventName" required />
-        <label class="col-3">Group Name: </label>
+        <label class="col-3 text-light">Event: </label><input class="col-6" type="text" name="eventname" value="@Model.EventName" required />
+        <label class="col-3 text-light">Group Name: </label>
         <select name="groupid" class="col-6">
             @foreach (var group in ViewBag.groupList)
             {
@@ -37,15 +37,15 @@
             }
         </select>
         <div>
-            <label class="col-3">Date:</label>
+            <label class="col-3 text-light">Date:</label>
             <input class="col-6" type="date" name="eventDate" value="@Model.DateAndTime.Date.ToString("yyyy-MM-dd")" />
         </div>
         <div>
-            <label class="col-3">Time:</label>
+            <label class="col-3 text-light">Time:</label>
             <input class="col-6" type="time" name="eventTime" value="@Model.DateAndTime.TimeOfDay" />
         </div>
-        <label class="col-3">Location/Venue: </label><input class="col-6" type="text" name="venue" value="@Model.Venue" required />
-        <label class="col-3">Area (City,ST or ZIP): </label><input class="col-6" type="text" name="venuelocation" value="@Model.VenueLocation" required />
+        <label class="col-3 text-light">Location/Venue: </label><input class="col-6" type="text" name="venue" value="@Model.Venue" required />
+        <label class="col-3 text-light">Area (City,ST or ZIP): </label><input class="col-6" type="text" name="venuelocation" value="@Model.VenueLocation" required />
         <div>
             <input class="btn btn-success" type="submit" value="Submit" />
         </div>

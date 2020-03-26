@@ -222,15 +222,21 @@ namespace NotiflyV0._1.Controllers
 
             bool badDate = false;
 
+            DateTime oldDateandTime = DateTime.MinValue;
+
             try
             {
                 if (ModelState.IsValid)
                 {
-                    dbEvent = editEvent;
                     Groups selectedGroup = _context.Groups.Where(x => x.GroupId == editEvent.GroupId).FirstOrDefault();
                     dbEvent.GroupId = selectedGroup.GroupId;
                     dbEvent.GroupName = selectedGroup.GroupName;
+                    oldDateandTime = dbEvent.DateAndTime;
                     dbEvent.DateAndTime = eventDate + eventTime;
+                    dbEvent.Venue = editEvent.Venue;
+                    dbEvent.VenueLocation = editEvent.VenueLocation;
+                    dbEvent.UserId = editEvent.UserId;
+                    dbEvent.EventName = editEvent.EventName;
 
                     TimeZoneInfo myTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
                     DateTime currentDateTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, myTimeZone);
@@ -257,6 +263,7 @@ namespace NotiflyV0._1.Controllers
             {
                 if (badDate)
                 {
+                    editEvent.DateAndTime = oldDateandTime;
                     ViewBag.groupList = _context.Groups.Where(x => x.UserId == id).ToList();
                     ViewBag.ErrorMsg = "Date and time entered are before the current date and time. Please try again.";
                     return View(editEvent);

@@ -1,17 +1,17 @@
 ﻿
 @{
-    ViewData["Title"] = "EventDetails";
+    ViewData["Title"] = "Event Details";
 }
 
 @model YelpDetailObject
 
-<h1>Event Details</h1>
+<h1 class="text-light">Event Details</h1>
 
 <div>
-    <h3>@ViewBag.thisEvent.EventName</h3>
+    <h3 class="text-light">@ViewBag.thisEvent.EventName</h3>
 </div>
 <div>
-    <p>
+    <p class="text-light">
         @ViewBag.thisEvent.Venue in @ViewBag.thisEvent.VenueLocation
         on @ViewBag.thisEvent.DateAndTime.ToString()
     </p>
@@ -21,12 +21,12 @@
 
 @if (Model.name == null)
 {
-    <h2>at @ViewBag.thisEvent.Venue</h2>
+    <h2 class="text-light">at @ViewBag.thisEvent.Venue</h2>
 }
 else if ((Model.name.Trim().ToLower().Contains(ViewBag.thisEvent.Venue.Trim().ToLower())) && (Model.name != null))
 {
-    <h2>Venue info: @Model.name</h2>
-    <table class="table">
+    <h2 class="text-light">Venue info: @Model.name</h2>
+    <table class="table text-light">
         <tr>
             <th>
                 Address
@@ -61,5 +61,5 @@ else if ((Model.name.Trim().ToLower().Contains(ViewBag.thisEvent.Venue.Trim().To
 }
 else
 {
-    <h2>at @ViewBag.thisEvent.Venue</h2>
+    <h2 class="text-light">at @ViewBag.thisEvent.Venue</h2>
 }
