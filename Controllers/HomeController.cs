@@ -284,49 +284,22 @@ namespace NotiflyV0._1.Controllers
 
         public IActionResult RemoveMember(int memberId)
         {
-            //In the ListGroups View, plan is to create a details button that will display the list
-            //of members participating in the group that was selected. 7
+            //In the Events View, plan is to create a details button that will display the list
+            //of members participating in the group.
             //This way, you could remove any individuals off the list. 
-            GroupMembers findMember = _context.GroupMembers.Find(memberId);
-
-            if (findMember != null)
+            GroupMembers foundMember = _context.GroupMembers.Find(memberId);
+            int groupId = foundMember.Groups;
+            if (foundMember != null)
             {
-                _context.GroupMembers.Remove(findMember);
+                
+                _context.GroupMembers.Remove(foundMember);
                 _context.SaveChanges();
             }
 
-            return RedirectToAction("GroupDetails");
+            return RedirectToAction("GroupDetails", new { groupId });
         }
 
-        [HttpGet]
-        public IActionResult EditMember(int memberid)
-        {
-            GroupMembers findMember = _context.GroupMembers.Find(memberid);
-            if (findMember != null)
-            {
-                return View(findMember);
-            }
-            return View();
-        }
-
-        [HttpPost]
-        public IActionResult EditMember(GroupMembers editMember)
-        {
-            GroupMembers dbGroupMember = _context.GroupMembers.Find(editMember.MemberId);
-
-            if (ModelState.IsValid)
-            {
-                dbGroupMember.MemberName = editMember.MemberName;
-                dbGroupMember.PhoneNumber = editMember.PhoneNumber;
-
-                _context.Entry(dbGroupMember).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-                _context.Update(dbGroupMember);
-                _context.SaveChanges();
-                int groupId = editMember.Groups;
-                return GroupDetails(groupId);
-            }
-            return GroupDetails(editMember.Groups);
-        }
+       
 
         [HttpGet]
         public IActionResult GroupDetails(int groupId)
@@ -396,18 +369,65 @@ namespace NotiflyV0._1.Controllers
         }
 
         [HttpPost]
-        public IActionResult AddMember(GroupMembers newMember)
+        public IActionResult AddMember(GroupMembers newMember, int groupId)
         {
             if (ModelState.IsValid)
             {
                 _context.Add(newMember);
                 _context.SaveChanges();
-                return RedirectToAction("Groups");
+                return RedirectToAction("GroupDetails", new { groupId });
             }
             else
             {
                 return View();
             }
+        }
+
+       [HttpGet]
+        public IActionResult EditEvent(int EventId)
+        {
+            EventTable findEvent = _context.EventTable.Find(EventId);
+            if (findEvent != null)
+            {
+                return View(findEvent);
+            }
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult EditEvent(EventTable updatedEvent)
+        {
+            EventTable dbEvent = _context.EventTable.Find(updatedEvent.EventId);
+            if (ModelState.IsValid)
+            {
+                dbEvent.EventName = updatedEvent.EventName;
+                dbEvent.GroupName = updatedEvent.GroupName;
+                dbEvent.DateAndTime = updatedEvent.DateAndTime;
+                dbEvent.Venue = updatedEvent.Venue;
+                dbEvent.VenueLocation = updatedEvent.VenueLocation;
+
+                _context.Entry(dbEvent).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                _context.Update(dbEvent);
+                _context.SaveChanges();
+
+                return RedirectToAction("Events");
+            }
+
+            return View();
+        }
+
+        public IActionResult RemoveEvent(int EventId)
+        { 
+            EventTable deleteEvent = _context.EventTable.Find(EventId);
+
+            if (deleteEvent != null)
+            {
+
+                _context.EventTable.Remove(deleteEvent);
+                _context.SaveChanges();
+            }
+
+            return RedirectToAction("Events");
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

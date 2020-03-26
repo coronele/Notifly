@@ -15,18 +15,22 @@
         <th>Location</th>
         <th>Details</th>
         <th>Rsvp</th>
+        <th>Edit Event</th>
+        <th>Remove Event</th>
     </tr>
     @foreach (var m in Model)
     {
-        <tr class="bg-light text-dark">
-            <td>@m.EventName</td>
-            <td>@m.GroupName</td>
-            <td>@m.DateAndTime</td>
-            <td>@m.Venue</td>
-            <td>@m.VenueLocation</td>
-            <td><button class="btn btn-outline-success" onclick="window.location.href='../Home/EventDetails?eventId=@m.EventId'">Details</button></td>
-            <td><button class="btn btn-outline-success" onclick="window.location.href='../Home/CheckRsvp?groupId=@m.GroupId&eventId=@m.EventId'">RSVPs</button></td>
-        </tr>
+<tr class="bg-light text-dark">
+    <td>@m.EventName</td>
+    <td>@m.GroupName</td>
+    <td>@m.DateAndTime</td>
+    <td>@m.Venue</td>
+    <td>@m.VenueLocation</td>
+    <td><button class="btn btn-outline-success" onclick="window.location.href='../Home/EventDetails?eventId=@m.EventId'">Details</button></td>
+    <td><button class="btn btn-outline-success" onclick="window.location.href='../Home/CheckRsvp?groupId=@m.GroupId&eventId=@m.EventId'">RSVPs</button></td>
+    <td><button class="btn btn-outline-success" onclick="window.location.href='../Home/EditEvent?eventId=@m.EventId'">Edit</button></td>
+    <td><button class="btn btn-outline-success" onclick="window.location.href='../Home/RemoveEvent?eventId=@m.EventId'">Remove</button></td>
+</tr>
     }
 
 </table>

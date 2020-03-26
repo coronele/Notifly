@@ -13,9 +13,9 @@
 <form action="../Home/EditMember" method="post">
     <br />
     <br />
-    <label>Name: </label><input type="text" name="memberName" value="@Model.MemberName" />
+    <label class="col-3">Name: </label><input type="text" name="memberName" value="@Model.MemberName" placeholder="Jon"/>
     <br />
-    <label>Phone Number:</label><input type="text" name="phoneNumber" value="@Model.PhoneNumber" />
+    <label class="col-3">Phone Number:</label><input type="text" name="phoneNumber" value="@Model.PhoneNumber" placeholder="+1###376####"/>
     <input type="hidden" name="MemberId" value="@Model.MemberId" />
     <input type="hidden" name="Groups" value="@Model.Groups" />
     <br />

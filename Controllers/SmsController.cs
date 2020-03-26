@@ -30,10 +30,10 @@ namespace Twillo_Test.Controllers
         }
 
 
-        public SmsController()
-        {
+        //public SmsController()
+        //{
 
-        }
+        //}
         public SmsController(IConfiguration configuration, NotiflyDbContext context)
         {
             TwilioAccountSid = configuration.GetSection("APIKeys")["TwilioAccountSid"];

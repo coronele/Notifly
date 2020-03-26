@@ -8,14 +8,12 @@
 <br />
 <br />
 <form action="../Home/AddMember" method="post">
-    <input type="text" name="memberName" placeholder="Member's Name" />
-    <input type="text" name="phoneNumber" placeholder="In this format: +1##########" />
+   <label class="col-3">Member Name: </label><input type="text" name="memberName" placeholder="Member's Name" /><br />
+    <label class="col-3">Phone Number: </label><input type="text" name="phoneNumber" placeholder="In this format: +1##########" />
     <br />
     <br />
     <input type="hidden" name="Groups" value="@Model" />
     <input type="hidden" name="groupId" value="@Model" />
-    <br />
-    <br />
     <input class="btn btn-primary" type="submit" value="Submit!" />
 </form>
 
