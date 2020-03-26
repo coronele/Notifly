@@ -49,7 +49,7 @@ namespace NotiflyV0._1.Controllers
                 }
                 else
                 {
-                    //SmsController.SendTextInHome(TwilioAccountSid, TwilioAuthToken, "Hey Erwin", "+");
+                    
 
                     return View();
                 }
