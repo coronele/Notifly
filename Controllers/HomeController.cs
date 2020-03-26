@@ -18,9 +18,7 @@ namespace NotiflyV0._1.Controllers
     {
         private readonly NotiflyDbContext _context;
         private readonly string YelpKey;
-
-        SmsController smsController = new SmsController();
-
+   
         public HomeController(NotiflyDbContext context, IConfiguration configuration)
         {
             _context = context;
@@ -139,52 +137,144 @@ namespace NotiflyV0._1.Controllers
         [HttpGet]
         public IActionResult AddEventToDatabase()
         {
-            return View();
+            string id = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            List<Groups> groupList = _context.Groups.Where(x => x.UserId == id).ToList();
+            return View(groupList);
         }
 
         [HttpPost]
-        public IActionResult AddEventToDatabase(EventTable newEvent)
+        public IActionResult AddEventToDatabase(EventTable newEvent, DateTime eventDate, TimeSpan eventTime, int groupId)
         {
             newEvent.UserId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            bool badDate = false;
 
             List<EventTable> eventList = _context.EventTable.Where(x => x.UserId == newEvent.UserId).ToList();
+
+            string id = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            List<Groups> groupList = _context.Groups.Where(x => x.UserId == id).ToList();
+
             try
             {
                 if (ModelState.IsValid)
                 {
-                    List<Groups> groupList = _context.Groups.Where(x => x.UserId == newEvent.UserId).ToList();
-                    bool groupMatch = false;
+                    Groups selectedGroup = _context.Groups.Where(x => x.GroupId == groupId).FirstOrDefault();
+                    newEvent.GroupId = selectedGroup.GroupId;
+                    newEvent.GroupName = selectedGroup.GroupName;
+                    newEvent.DateAndTime = eventDate + eventTime;
 
-                    for (int i = 0; i < groupList.Count; i++)
+                    TimeZoneInfo myTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+                    DateTime currentDateTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, myTimeZone);
+
+                    // Date and Time check
+                    if (newEvent.DateAndTime.CompareTo(currentDateTime) < 1)
                     {
-                        if (groupList[i].GroupName == newEvent.GroupName)
-                        {
-                            groupMatch = true;
-                            newEvent.GroupId = groupList[i].GroupId;
-                            break;
-                        }
-                    }
-                    if (groupMatch == false)
-                    {
-                        throw new Exception("Invalid group name");
+                        badDate = true;
+                        throw new Exception();
                     }
 
                     _context.EventTable.Add(newEvent);
                     _context.SaveChanges();
 
-
-                    return View();
+                    return RedirectToAction("Events");
                 }
                 else
                 {
-                    return View();
+                    ViewBag.ErrorMsg = "Invalid Data. Please try again.";
+                    return View(groupList);
                 }
             }
             catch
             {
-                return View();
+                if (badDate)
+                {
+                    ViewBag.ErrorMsg = "Date and time entered are before the current date and time. Please try again.";
+                    return View(groupList);
+                }
+                else
+                {
+                    ViewBag.ErrorMsg = "Unknown error";
+                    return View(groupList);
+                }
             }
+        }
 
+        [HttpGet]
+        public IActionResult EditEvent(int eventid)
+        {
+            EventTable findEvent = _context.EventTable.Find(eventid);
+            string id = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            ViewBag.groupList = _context.Groups.Where(x => x.UserId == id).ToList();
+
+            if (findEvent != null)
+            {
+                return View(findEvent);
+            }
+            return RedirectToAction("Events");
+        }
+
+        [HttpPost]
+        public IActionResult EditEvent(EventTable editEvent, DateTime eventDate, TimeSpan eventTime, int groupId)
+        {
+            EventTable dbEvent = _context.EventTable.Find(editEvent.EventId);
+            List<EventTable> eventTableList = _context.EventTable.ToList();
+
+            string id = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+            bool badDate = false;
+
+            DateTime oldDateandTime = DateTime.MinValue;
+
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    Groups selectedGroup = _context.Groups.Where(x => x.GroupId == editEvent.GroupId).FirstOrDefault();
+                    dbEvent.GroupId = selectedGroup.GroupId;
+                    dbEvent.GroupName = selectedGroup.GroupName;
+                    oldDateandTime = dbEvent.DateAndTime;
+                    dbEvent.DateAndTime = eventDate + eventTime;
+                    dbEvent.Venue = editEvent.Venue;
+                    dbEvent.VenueLocation = editEvent.VenueLocation;
+                    dbEvent.UserId = editEvent.UserId;
+                    dbEvent.EventName = editEvent.EventName;
+
+                    TimeZoneInfo myTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+                    DateTime currentDateTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, myTimeZone);
+
+                    // Date and Time check
+                    if (dbEvent.DateAndTime.CompareTo(currentDateTime) < 1)
+                    {
+                        badDate = true;
+                        throw new Exception();
+                    }
+                    _context.Entry(dbEvent).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                    _context.Update(dbEvent);
+                    _context.SaveChanges();
+                    return RedirectToAction("Events");
+                }
+                else
+                {
+                    ViewBag.groupList = _context.Groups.Where(x => x.UserId == id).ToList();
+                    ViewBag.ErrorMsg = "Invalid Data. Please try again.";
+                    return View(editEvent);
+                }
+            }
+            catch
+            {
+                if (badDate)
+                {
+                    editEvent.DateAndTime = oldDateandTime;
+                    ViewBag.groupList = _context.Groups.Where(x => x.UserId == id).ToList();
+                    ViewBag.ErrorMsg = "Date and time entered are before the current date and time. Please try again.";
+                    return View(editEvent);
+                }
+                else
+                {
+                    ViewBag.groupList = _context.Groups.Where(x => x.UserId == id).ToList();
+                    ViewBag.ErrorMsg = "Unknown error(0)";
+                    return View(editEvent);
+                }
+            }
         }
 
         public IActionResult Groups()
