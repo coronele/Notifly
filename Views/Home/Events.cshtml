@@ -15,25 +15,26 @@
         <th>Location</th>
         <th>Details</th>
         <th>Rsvp</th>
-        <th>Edit</th>
+        <th>Send Out Reminders</th>
         <th>Delete</th>
     </tr>
     @foreach (var m in Model)
     {
-        <tr class="bg-light text-dark">
-            <td><b>@m.EventName</b></td>
-            <td>@m.GroupName</td>
-            <td>@m.DateAndTime.ToString("ddd, MMM dd, yyyy hh:mm tt")</td>
-            <td>@m.Venue</td>
-            <td>@m.VenueLocation</td>
-            <td><button class="btn btn-outline-success" onclick="window.location.href='../Home/EventDetails?eventId=@m.EventId'">Details</button></td>
-            <td><button class="btn btn-outline-success" onclick="window.location.href='../Home/CheckRsvp?groupId=@m.GroupId&eventId=@m.EventId'">RSVPs</button></td>
-            <td><button onclick="window.location.href = '../Home/EditEvent?eventId=@m.EventId'" type="button" class="btn btn-dark btn-outline-info">📝</button></td>
-            <td><button onclick="window.location.href = '../Home/DeleteEvent?eventId=@m.EventId'" type="button" class="btn btn-dark btn-outline-danger">🗑️</button></td>
-        </tr>
+<tr class="bg-light text-dark">
+    <td>@m.EventName</td>
+    <td>@m.GroupName</td>
+    <td>@m.DateAndTime</td>
+    <td>@m.Venue</td>
+    <td>@m.VenueLocation</td>
+    <td><button class="btn btn-outline-success" onclick="window.location.href='../Home/EventDetails?eventId=@m.EventId'">Details</button></td>
+    <td><button class="btn btn-outline-success" onclick="window.location.href='../Home/CheckRsvp?groupId=@m.GroupId&eventId=@m.EventId'">RSVPs</button></td>
+    <td><button class="btn btn-warning btn-outline-danger" onclick="window.location.href='../Home/SendRemindersFromHome?eventId=@m.EventId'">✉</button></td>
+    <td><button onclick="window.location.href = '../Home/DeleteEvent?eventId=@m.EventId'" type="button" class="btn btn-dark btn-outline-danger">🗑️</button></td>
+</tr>
     }
+
 </table>
-<td><button class="btn btn-outline-light" onclick="window.location.href='../Home/AddEventToDatabase'">Create New Event</button></td>
+<td><button class="btn btn-light btn-outline-primary btn-lg text-dark" onclick="window.location.href='../Home/AddEventToDatabase'">Create New Event</button></td>
 
 
 

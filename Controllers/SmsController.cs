@@ -25,6 +25,9 @@ namespace Twillo_Test.Controllers
         private readonly string TwilioAuthToken;
         private readonly NotiflyDbContext _context;
 
+
+        
+
         public SmsController(IConfiguration configuration, NotiflyDbContext context)
         {
             TwilioAccountSid = configuration.GetSection("APIKeys")["TwilioAccountSid"];
@@ -44,7 +47,7 @@ namespace Twillo_Test.Controllers
 
             }
 
-            else if (messageParts[0] == "?" || messageParts[0].ToLower() == "h" || messageParts[0].ToLower() == "help")
+            else if (incomingMessage.Body == "?" || incomingMessage.Body.ToLower().ToCharArray()[0] == 'h')
             {
                 if (messageParts.Length == 1)
                 {
@@ -285,6 +288,20 @@ namespace Twillo_Test.Controllers
                 var message = MessageResource.Create(messageOptions);
         }
 
+
+        public static void SendTextInHome(string twilioAccountSid, string twilioAuthToken, string body, string number)
+        {
+            TwilioClient.Init(twilioAccountSid, twilioAuthToken);
+
+
+            var messageOptions = new CreateMessageOptions(
+            new PhoneNumber(number));
+            messageOptions.From = new PhoneNumber("+19854413010");
+            messageOptions.Body = body;
+            var message = MessageResource.Create(messageOptions);
+        }
+
+
         public void SendReminder(SmsRequest incomingMessage, string userNumberString)
         {
             bool badNumber = false;
@@ -337,8 +354,10 @@ namespace Twillo_Test.Controllers
 
                 EventTable userEvent = userEvents[foundIndex];
 
+                TimeZoneInfo myTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+                DateTime currentDateTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, myTimeZone);
 
-                TimeSpan timeRemainingForEvent = userEvent.DateAndTime.Subtract(DateTime.Now);
+                TimeSpan timeRemainingForEvent = userEvent.DateAndTime.Subtract(currentDateTime);
                 string timeLeft;
                 if (timeRemainingForEvent.TotalDays < 1)
                 {
